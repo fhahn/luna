@@ -25,16 +25,13 @@ class Parser(object):
         self.bytes = bytearray(os.read(f, 99999))
         self.pos = 0
 
-
     def next_bytes(self, l):
         v = slice(self.bytes, self.pos, self.pos+l)
         self.pos += l
         return v
 
     def byte(self):
-        v = self.bytes[self.pos]
-        self.pos += 1
-        return v
+        return self.next_bytes(1)[0]
 
     def word(self):
         return self.next_bytes(4)
@@ -52,31 +49,30 @@ class Parser(object):
             shift += 7
         return result
 
-def parse(filename):
-    # parses a luajit bytecode file 
-    # see http://wiki.luajit.org/Bytecode-2.0 for format information
-    parser = Parser(filename)
+    def parse(self):
+        # parses a luajit bytecode file 
+        # see http://wiki.luajit.org/Bytecode-2.0 for format information
 
-    # header = ESC 'L' 'J' versionB flagsU [namelenU nameB*]
-    if parser.byte() != 0x1b: raise ValueError("Expected ESC in first byte");
-    if parser.byte() != 0x4c: raise ValueError("Expected L in second byte");
-    if parser.byte() != 0x4a: raise ValueError("Expected J in third byte");
-    if parser.byte() != 1: raise ValueError("Only version 1 supported");
+        # header = ESC 'L' 'J' versionB flagsU [namelenU nameB*]
+        if self.byte() != 0x1b: raise ValueError("Expected ESC in first byte")
+        if self.byte() != 0x4c: raise ValueError("Expected L in second byte")
+        if self.byte() != 0x4a: raise ValueError("Expected J in third byte")
+        if self.byte() != 1: raise ValueError("Only version 1 supported")
 
-    # flags
-    flags = parser.uleb()
+        # flags
+        flags = self.uleb()
 
-    # proto+    
-    proto_buffer = []
-    while True:
-        l = parser.uleb()
-        proto_buffer.append(parser.next_bytes(l))
-        if parser.bytes[parser.pos] == 0:
-            break
-    # 0U and EOF
-    if parser.uleb() != 0: raise ValueError("Missing 0U at end of file");
-    print(parser.pos, len(parser.bytes))
-    if parser.pos < len(parser.bytes): raise ValueError(" bytes leftover");
+        # proto+    
+        proto_buffer = []
+        while True:
+            l = self.uleb()
+            proto_buffer.append(self.next_bytes(l))
+            if self.bytes[self.pos] == 0:
+                break
+        # 0U and EOF
+        if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
+        print(self.pos, len(self.bytes))
+        if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
 
 def entry_point(argv):
     try:
@@ -84,7 +80,7 @@ def entry_point(argv):
     except IndexError:
         print "You must supply a filename"
         return 1
-    parse(filename)
+    p = Parser(filename).parse()
     return 0
 
 def target(*args):
