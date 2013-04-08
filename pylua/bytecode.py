@@ -71,20 +71,4 @@ class Parser(object):
                 break
         # 0U and EOF
         if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
-        print(self.pos, len(self.bytes))
         if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
-
-def entry_point(argv):
-    try:
-        filename = argv[1]
-    except IndexError:
-        print "You must supply a filename"
-        return 1
-    p = Parser(filename).parse()
-    return 0
-
-def target(*args):
-    return entry_point, None
-
-if __name__ == "__main__":
-    entry_point(sys.argv)
