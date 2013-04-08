@@ -1,33 +1,10 @@
-import pytest
-
 from itertools import izip_longest
 from subprocess import call
 
 from pylua.bytecode import Parser
-
-def write_to_file(tmpdir, data):
-    testfile = tmpdir.join('input.b')
-    testfile.write(data, mode='wb')
-    data = bytearray(data)
-    return (testfile.dirname+'/'+testfile.basename, data)
-
-@pytest.fixture
-def byte_file(tmpdir):
-    data = bytes("\xA0\x00\xBC\xFF\x98\x66\x66\xA0\x00\xBC\xFF\x98\x66\x66")
-    return write_to_file(tmpdir, data)
+from pylua.tests.fixtures import byte_file, uleb_file, luabytecode_file
 
 
-@pytest.fixture
-def uleb_file(tmpdir):
-    return write_to_file(tmpdir, "\xE5\x8E\x26")
-
-@pytest.fixture
-def luabytecode_file(tmpdir):
-    testfile = tmpdir.join('lua.l')
-    testfile.write("x = 1")
-    bc_file = testfile.dirname + '/out.b'
-    call(['luajit', '-b', testfile.dirname+'/'+testfile.basename, bc_file])
-    return bc_file
 
 class TestParser:
     def test_byte(self, byte_file):
