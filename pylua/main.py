@@ -2,6 +2,7 @@ import sys
 import os
 
 from pylua.bytecode import Parser
+from pylua.interpreter import Interpreter
 
 
 def _needs_compilation(path1, path2):
@@ -35,7 +36,10 @@ def main(argv):
 
     if ext == 'l':
     	filename += 'c'
-    p = Parser(filename).parse()
+    flags, protos = Parser(filename).parse()
+    interpreter = Interpreter(flags, protos)
+    interpreter.run()
+    
     return 0
 
 def target(*args):
