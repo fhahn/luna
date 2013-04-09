@@ -26,6 +26,13 @@ def uleb_file(tmpdir):
 def luabytecode_file(tmpdir):
     testfile = tmpdir.join('lua.l')
     testfile.write("x = 1")
-    bc_file = testfile.dirname + '/out.b'
+    bc_file = testfile.dirname + '/out.lc'
     call(['luajit', '-b', testfile.dirname+'/'+testfile.basename, bc_file])
     return bc_file
+
+@pytest.fixture
+def luacode_file(tmpdir):
+    testfile = tmpdir.join('lua.l')
+    testfile.write("x = 1")
+    path = testfile.dirname + '/' + testfile.basename
+    return path
