@@ -7,24 +7,11 @@
         - http://luajit.org/running.html#opt_b
 
 """
-import sys
 import os
-import struct
-import array
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
 
-# always returns a bytearray
-# TODO is there a better way to slice in rpython?
-"""
-def slice(iterable, start, end):
-    res = b'' 
-    # TODO doesn't work with res as list, maybe a rpython bug?
-    for i in xrange(start, min(end, len(iterable))):
-        res += chr(iterable[i])
-    return bytearray(res)
-"""
 OPCODES = [
   "ISLT", "ISGE", "ISLE", "ISGT", "ISEQV", "ISNEV", "ISEQS", "ISNES", "ISEQN",
   "ISNEN", "ISEQP", "ISNEP", "ISTC", "ISFC", "IST", "ISF", "MOV", "NOT", "UNM",
