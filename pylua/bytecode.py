@@ -15,34 +15,23 @@ import array
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
 
-# always returns a bytearray
-# TODO is there a better way to slice in rpython?
-"""
-def slice(iterable, start, end):
-    res = b'' 
-    # TODO doesn't work with res as list, maybe a rpython bug?
-    for i in xrange(start, min(end, len(iterable))):
-        res += chr(iterable[i])
-    return bytearray(res)
-"""
-OPCODES = [
-  "ISLT", "ISGE", "ISLE", "ISGT", "ISEQV", "ISNEV", "ISEQS", "ISNES", "ISEQN",
-  "ISNEN", "ISEQP", "ISNEP", "ISTC", "ISFC", "IST", "ISF", "MOV", "NOT", "UNM",
-  "LEN", "ADDVN", "SUBVN", "MULVN", "DIVVN", "MODVN", "ADDNV", "SUBNV", "MULNV",
-  "DIVNV", "MODNV", "ADDVV", "SUBVV", "MULVV", "DIVVV", "MODVV", "POW", "CAT",
-  "KSTR", "KCDATA", "KSHORT", "KNUM", "KPRI", "KNIL", "UGET", "USETV", "USETS",
-  "USETN", "USETP", "UCLO", "FNEW", "TNEW", "TDUP", "GGET", "GSET", "TGETV",
-  "TGETS", "TGETB", "TSETV", "TSETS", "TSETB", "TSETM", "CALLM", "CALL",
-  "CALLMT", "CALLT", "ITERC", "ITERN", "VARG", "ISNEXT", "RETM", "RET", "RET0",
-  "RET1", "FORI", "JFORI", "FORL", "IFORL", "JFORL", "ITERL", "IITERL",
-  "JITERL", "LOOP", "ILOOP", "JLOOP", "JMP", "FUNCF", "IFUNCF", "JFUNCF",
-  "FUNCV", "IFUNCV", "JFUNCV", "FUNCC", "FUNCCW"
-]
+from pylua.instructions import *
 
+OP_CODES = [
+    ISLT, ISGE, ISLE, ISGT, ISEQV, ISNEV, ISEQS, ISNES, ISEQN, ISNEN, ISEQP,
+    ISNEP, ISTC, ISFC, IST, ISF, MOV, NOT, UNM, LEN, ADDVN, SUBVN, MULVN, 
+    DIVVN, MODVN, ADDNV, SUBNV, MULNV, DIVNV, MODNV, ADDVV, SUBVV, MULVV, 
+    DIVVV, MODVV, POW, CAT, KSTR, KCDATA, KSHORT, KNUM, KPRI, KNIL, UGET,
+    USETV, USETS, USETN, USETP, UCLO, FNEW, TNEW, TDUP, GGET, GSET, TGETV,
+    TGETS, TGETB, TSETV, TSETS, TSETB, TSETM, CALLM, CALL, CALLMT, CALLT,
+    ITERC, ITERN, VARG, ISNEXT, RETM, RET, RET0, RET1, FORI, JFORI, FORL,
+    IFORL, JFORL, ITERL, IITERL, JITERL, LOOP, ILOOP, JLOOP, JMP, FUNCF,
+    IFUNCF, JFUNCF, FUNCV, IFUNCV, JFUNCV, FUNCC, FUNCCW
+]
 OP_DEF = {
-    'KSHORT': {'A': 'dst', 'D': 'lits'},
-    'GSET':   {'A': 'var', 'D': 'str'},
-    'RET0':   {'A': 'rbase', 'D': 'lit'}
+    KSHORT: {'A': 'dst', 'D': 'lits'},
+    GSET:   {'A': 'var', 'D': 'str'},
+    RET0:   {'A': 'rbase', 'D': 'lit'}
 }
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR"]
@@ -89,22 +78,10 @@ class Proto(object):
 
     def decode_opcode(self, word):
         ind = word & 0xff
-        code = OPCODES[ind]
-        op_def = OP_DEF[code]
-        args = []
-
-        # A
-        args.append((word >> 8) & 0xff)
-
-        # D
-        if 'D' in op_def:
-            args.append(word >> 16)
-        else:
-            args.append((word >> 16) & 0xff)
-            args.append(word >> 24)
-
-        return (code, args)
-
+        code = OP_CODES[ind]
+        ins = code(word)
+        assert isinstance(ins, AbstractInstruction)
+        return ins
 
     """
     def decode_arg(self, type, val):

@@ -3,6 +3,7 @@ from itertools import izip_longest
 from pylua.bytecode import Parser
 from pylua.tests.fixtures import byte_file, uleb_file, luabytecode_file
 
+from pylua.instructions import *
 
 
 class TestParser:
@@ -39,6 +40,16 @@ class TestParser:
         proto = protos[0]
 
         assert proto.constants == ['x']
-        assert proto.instructions == [
-                ('KSHORT', [0, 1]), ('GSET', [0, 0]), ('RET0', [0, 1])
-        ]
+
+        assert isinstance(proto.instructions[0], KSHORT)
+        assert proto.instructions[0].a == 0
+        assert proto.instructions[0].d == 1
+
+        assert isinstance(proto.instructions[1], GSET)
+        assert proto.instructions[1].a == 0
+        assert proto.instructions[1].d == 0
+
+        assert isinstance(proto.instructions[2], RET0)
+        assert proto.instructions[2].a == 0
+        assert proto.instructions[2].d == 1
+   
