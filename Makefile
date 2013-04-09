@@ -8,7 +8,7 @@ clean:
 	rm -rf ./bin
 
 pylua: 
-	mkdir ./bin
+	mkdir -p ./bin
 	PYTHONPATH="." $(RPY_WRAP) $(RPY) $(RPY_FLAGS) pylua/main.py ../bin/pylua
 .PHONY: pylua
 
