@@ -7,11 +7,24 @@
         - http://luajit.org/running.html#opt_b
 
 """
+import sys
 import os
+import struct
+import array
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
 
+# always returns a bytearray
+# TODO is there a better way to slice in rpython?
+"""
+def slice(iterable, start, end):
+    res = b'' 
+    # TODO doesn't work with res as list, maybe a rpython bug?
+    for i in xrange(start, min(end, len(iterable))):
+        res += chr(iterable[i])
+    return bytearray(res)
+"""
 OPCODES = [
   "ISLT", "ISGE", "ISLE", "ISGT", "ISEQV", "ISNEV", "ISEQS", "ISNES", "ISEQN",
   "ISNEN", "ISEQP", "ISNEP", "ISTC", "ISFC", "IST", "ISF", "MOV", "NOT", "UNM",
@@ -26,40 +39,93 @@ OPCODES = [
   "FUNCV", "IFUNCV", "JFUNCV", "FUNCC", "FUNCCW"
 ]
 
+OP_DEF = {
+    'KSHORT': {'A': 'dst', 'D': 'lits'},
+    'GSET':   {'A': 'var', 'D': 'str'},
+    'RET0':   {'A': 'rbase', 'D': 'lit'}
+}
+
+KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR"]
+
+
+class Arg(object):
+    def __init__(self, val):
+        self.val = val
+
 class Proto(object):
 
     def __init__(self, p):
         self.flags = p.byte()
         self.num_params = p.byte()
         self.frame_size = p.byte()
-        self.num_uv = p.byte()
-        self.num_kgc = p.uleb()
-        self.num_kn = p.uleb()
-        self.num_bc = p.uleb()
+        num_uv = p.byte()
+        num_kgc = p.uleb()
+        num_kn = p.uleb()
+        num_bc = p.uleb()
 
-        bc_ins = []
-        print("found "+ str(self.num_bc) + " bc instructions")
-        print self.flags, self.num_params, self.frame_size, self.num_uv, self.num_kgc, self.num_kn, self.num_bc
-        for i in xrange(0, self.num_bc):
-            self.decode_opcode(p.word())
+        self.instructions = []
+        print("found "+ str(num_bc) + " bc instructions")
+        for i in xrange(0, num_bc):
+            self.instructions.append(self.decode_opcode(p.word()))
 
         uv_data = []
-        for i in xrange(0, self.num_uv):
+        for i in xrange(0, num_uv):
             uv = p.h()
             uv_data.append((uv & 0x8000, uv & 0x4000, uv & 0x3fff))
 
-        constants = []
-        #TODO imlement constant parsing
-        for i in xrange(0, self.num_kgc):
-            constants.append(p.uleb())
+        self.constants = []
 
-        # TODO parse constants
-        for i in xrange(0, self.num_kgc):
-            constants.append(p.uleb())
+        #TODO imlement constant parsing
+        for i in xrange(0, num_kgc):
+            # STR constant parsing
+            c_type = "STR"
+            l = kgc_type = p.uleb()
+            l -= 5 # Offset for STR enum
+            assert l > 0
+            self.constants.append(p.bytes[p.pos:p.pos+l])
+            p.pos += l
+        self.num_consts = len(self.constants)
+        print(self.constants, self.instructions)
+
     def decode_opcode(self, word):
         ind = word & 0xff
         code = OPCODES[ind]
-        print ind, code, word
+        op_def = OP_DEF[code]
+        args = []
+
+        # A
+        args.append((word >> 8) & 0xff)
+
+        # D
+        if 'D' in op_def:
+            args.append(word >> 16)
+        else:
+            args.append((word >> 16) & 0xff)
+            args.append(word >> 24)
+
+        return (code, args)
+
+
+    """
+    def decode_arg(self, type, val):
+        if type == 'lit':  # literal
+            return Arg(val >> 0)#?
+        elif type == 'lits': # signed literal
+            return Arg(0x10000 - val if (val & 0x8000) > 0 else val)
+        elif type == 'pri':
+            if val == 0: return Arg(None)
+            elif val == 1: return Arg(False)
+            elif val == 2: return Arg(True)
+            else: assert 0 
+        elif type == 'num': return Arg(val) #return self.constants[val]
+        elif type in ('str', 'tab', 'func', 'cdata'):
+            return Arg(self.constants[self.num_consts-val-1])
+        elif type == 'jump':
+            return Arg(val - 0x8000)
+        else:
+         return Arg(val)
+    """
+
 
 
 class Parser(object):
@@ -115,14 +181,14 @@ class Parser(object):
         flags = self.uleb()
 
         # proto+    
-        proto_buffer = []
+        protos = []
         while True:
             l = self.uleb()
-            print self.pos, len(self.bytes),l 
-            Proto(self)
+            protos.append(Proto(self))
             # peek at next byte only, do not consume
             if self.peek() == 0:
                 break
         # 0U and EOF
         if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
         if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
+        return (flags, protos)

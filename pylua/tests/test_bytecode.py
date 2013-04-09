@@ -30,9 +30,15 @@ class TestParser:
         p = Parser(uleb_file[0])
         assert p.uleb() == 624485
 
-    def test_parse(self, luabytecode_file):
+    def test_parse_simple_assignment(self, luabytecode_file):
         """
-        just checks if a valid bytecode file yields no exceptions
+        checks if KSHORT, GSET and RET0 are decoded correctly
         """
         p = Parser(luabytecode_file)
-        p.parse()
+        flags, protos = p.parse()
+        proto = protos[0]
+
+        assert proto.constants == ['x']
+        assert proto.instructions == [
+                ('KSHORT', [0, 1]), ('GSET', [0, 0]), ('RET0', [0, 1])
+        ]
