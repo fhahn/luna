@@ -1,2 +1,2 @@
 # testing requirement
-py.test
+pytest
