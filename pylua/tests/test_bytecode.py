@@ -40,16 +40,6 @@ class TestParser:
         proto = protos[0]
 
         assert proto.constants == ['x']
-
-        assert isinstance(proto.instructions[0], KSHORT)
-        assert proto.instructions[0].a == 0
-        assert proto.instructions[0].d == 1
-
-        assert isinstance(proto.instructions[1], GSET)
-        assert proto.instructions[1].a == 0
-        assert proto.instructions[1].d == 0
-
-        assert isinstance(proto.instructions[2], RET0)
-        assert proto.instructions[2].a == 0
-        assert proto.instructions[2].d == 1
-   
+        assert proto.instructions == [
+            (39, (0, 1, 0)), (53, (0, 0, 0)), (71, (0, 1, 0))
+        ]
