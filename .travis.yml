@@ -8,6 +8,9 @@ install:
   - wget https://bitbucket.org/pypy/pypy/get/default.tar.bz2 -O `pwd`/../pypy.tar.bz2
   - tar -xf `pwd`/../pypy.tar.bz2 -C `pwd`/../
   - sudo apt-get install luajit
+  - mkdir lua
+  - ln -s /usr/bin/luajit-2.0.0-beta9 lua/luajit
+
 
 # command to run tests
-script: PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` python runtests.py
+script: PATH=$PATH:`pwd`/lua/ PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` python runtests.py
