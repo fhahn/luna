@@ -1,7 +1,3 @@
-
-
-from rpython.rlib import jit
-
 from pylua.opcodes import unrolled_op_desc
 
 
@@ -26,7 +22,6 @@ class LuaFrame(object):
         # TODO check bounds
         self.registers = [0] * 10
 
-    @jit.unroll_safe
     def execute_frame(self):
         pc = 0
         while True:
