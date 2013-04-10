@@ -5,13 +5,15 @@ class Interpreter(object):
         self.num_frames = len(frames)
 
     def run(self):
+        returnvalue = None
         while True:
             frame_ind = 0
             next_frame = self.frames[frame_ind]
             frame_ind += 1
 
             returnvalue = next_frame.execute_frame()
-            if returnvalue.w_returnvalue == 1 or frame_ind == self.num_frames:
+            if frame_ind == self.num_frames or returnvalue is not None:
                 break
 
-        print("finished interpreting")
+        print("Finished intepreting")
+        return returnvalue

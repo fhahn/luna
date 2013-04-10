@@ -5,11 +5,8 @@ class SReturnValue(object):
     """Signals a 'return' statement.
     Argument is the wrapped object to return."""
     _immutable_ = True
-    kind = 0x01
-    def __init__(self, w_returnvalue):
-        self.w_returnvalue = w_returnvalue
-    def nomoreblocks(self):
-        return self.w_returnvalue
+    def __init__(self, returnvalue):
+        self.returnvalue = returnvalue
 
 class LuaFrame(object):
     def __init__(self, flags, constants, instructions):
