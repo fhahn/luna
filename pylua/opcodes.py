@@ -77,7 +77,7 @@ def_op('DIVNV', 28, ARGS_AD)
 
 def_op('MODNV', 29, ARGS_AD)
 
-def_op('ADDVV', 30, ARGS_AD)
+def_op('ADDVV', 30, ARGS_ABC)
 
 def_op('SUBVV', 31, ARGS_AD)
 

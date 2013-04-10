@@ -7,10 +7,7 @@
         - http://luajit.org/running.html#opt_b
 
 """
-import sys
 import os
-import struct
-import array
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
@@ -21,9 +18,6 @@ from pylua.luaframe import LuaFrame
 
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR"]
-
-
-
 
 """
 def decode_arg(self, type, val):
@@ -44,7 +38,6 @@ def decode_arg(self, type, val):
     else:
      return Arg(val)
 """
-
 
 
 class Parser(object):
@@ -143,17 +136,20 @@ class Parser(object):
             constants.append(self.bytes[self.pos:self.pos+l])
             self.pos += l
 
-        print(constants, instructions)
+        print constants
+        for (ind, args) in instructions:
+            print OP_DESC[ind].name, args
+
         return LuaFrame(flags, constants, instructions)
 
     def decode_opcode(self, word):
         ind = word & 0xff
         op_desc = OP_DESC[ind]
         args_type = op_desc.args_type
-        args = (None, None, None)
+        args = (0, 0, 0)
         a = (word >> 8) & 0xff
         if args_type == ARGS_AD:
-            args =  (a, word >> 16, None)
+            args =  (a, word >> 16, 0)
         elif args_type == ARGS_ABC:
             args = (a, (word >> 16) & 0xff, word >> 24)
         else:

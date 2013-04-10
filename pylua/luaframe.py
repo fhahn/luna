@@ -4,11 +4,27 @@ from rpython.rlib import jit
 
 from pylua.opcodes import unrolled_op_desc
 
+
+class SReturnValue(object):
+    """Signals a 'return' statement.
+    Argument is the wrapped object to return."""
+    _immutable_ = True
+    kind = 0x01
+    def __init__(self, w_returnvalue):
+        self.w_returnvalue = w_returnvalue
+    def nomoreblocks(self):
+        return self.w_returnvalue
+
 class LuaFrame(object):
     def __init__(self, flags, constants, instructions):
         self.flags = flags
         self.constants = constants
+        self.num_constants = len(constants)
         self.instructions = instructions
+        self.num_instructions = len(instructions)
+        self.globals = {}
+        # TODO check bounds
+        self.registers = [0] * 10
 
     @jit.unroll_safe
     def execute_frame(self):
@@ -20,7 +36,18 @@ class LuaFrame(object):
             for op_desc in unrolled_op_desc:   
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
-                    meth(i_args)
+                    returnvalue = meth(i_args)
+                    if returnvalue is not None:
+                        return SReturnValue(returnvalue)
+
+            if  pc == self.num_instructions:
+                break
+
+    def decode_lits(self, val):
+        return 0x10000 - val if (val & 0x8000) > 0 else val
+
+    def get_constant(self, val):
+        return self.constants[self.num_constants-val-1]
 
     def ISLT(self, args): raise NotImplementedError('ISLT not implemented') 
 
@@ -82,7 +109,15 @@ class LuaFrame(object):
 
     def MODNV(self, args): raise NotImplementedError('MODNV not implemented') 
 
-    def ADDVV(self, args): raise NotImplementedError('ADDVV not implemented') 
+    def ADDVV(self, args):
+        """
+        A: dst, B: var, C: var
+        Sets A to B + C
+        """
+        val1 = self.registers[args[1]]
+        val2 = self.registers[args[2]]
+        print("ADDVV: Reg %d = %s + %s" % (args[0], val1, val2))
+        self.registers[args[0]] = val1 + val2
 
     def SUBVV(self, args): raise NotImplementedError('SUBVV not implemented') 
 
@@ -100,7 +135,14 @@ class LuaFrame(object):
 
     def KCDATA(self, args): raise NotImplementedError('KCDATA not implemented') 
 
-    def KSHORT(self, args): print("KSHORT called")
+    def KSHORT(self, args): 
+        """
+        A: dst, D: lits
+        Set A to 16 bit signed integer D
+        """
+        val = self.decode_lits(args[1])
+        print("KSHORT: set R %d to %d" %(args[0], val))
+        self.registers[args[0]] = val
 
     def KNUM(self, args): raise NotImplementedError('KNUM not implemented') 
 
@@ -126,9 +168,23 @@ class LuaFrame(object):
 
     def TDUP(self, args): raise NotImplementedError('TDUP not implemented') 
 
-    def GGET(self, args): raise NotImplementedError('GGET not implemented') 
+    def GGET(self, args):
+       """
+       A: dst, D: str
+       get global
+       """
+       key = self.get_constant(args[1])
+       self.registers[args[0]] = self.globals[key]
 
-    def GSET(self, args): print("GSET called")
+    def GSET(self, args):
+        """
+        A: dst, D: str
+        Set Global
+        """
+        key = self.get_constant(args[1])
+        val = self.registers[args[0]]
+        print('GSET: set global %s to %s' %(key, val))
+        self.globals[key] = val
 
     def TGETV(self, args): raise NotImplementedError('TGETV not implemented') 
 
@@ -164,9 +220,22 @@ class LuaFrame(object):
 
     def RET(self, args): raise NotImplementedError('RET not implemented') 
 
-    def RET0(self, args): print("RET0 called")
+    def RET0(self, args): 
+        """
+        A: rbase, D: lit
+        Return without value
+        """
+        print("RET0 called")
+        return 0
 
-    def RET1(self, args): raise NotImplementedError('RET1 not implemented') 
+    def RET1(self, args):
+        """
+        A: rbase, D: lit
+        Return with exactly one value, R(A) holds the value
+        """
+        retval = self.registers[args[0]]
+        print('RET1: return %s' % retval)
+        return retval
 
     def FORI(self, args): raise NotImplementedError('FORI not implemented') 
 
