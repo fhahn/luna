@@ -1,9 +1,5 @@
-from itertools import izip_longest
-
 from pylua.bytecode import Parser
 from pylua.tests.fixtures import byte_file, uleb_file, luabytecode_file
-
-from pylua.instructions import *
 
 
 class TestParser:
