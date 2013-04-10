@@ -9,4 +9,4 @@ install:
   - tar -xf `pwd`/../pypy.tar.bz2 -C `pwd`/../
 
 # command to run tests
-script: PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` "make test"
+script: PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` python runtests.py
