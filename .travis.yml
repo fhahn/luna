@@ -5,5 +5,8 @@ python:
 install:
   #- pip install . --use-mirrors
   - pip install -r requirements.txt --use-mirrors
+   - wget https://bitbucket.org/pypy/pypy/get/default.tar.bz2 -O `pwd`/../pypy.tar.bz2
+   - tar -xf `pwd`/../pypy.tar.bz2 -C `pwd`/../
+script: PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` "make test"
 # command to run tests
 script: "make test" 
