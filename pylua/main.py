@@ -36,6 +36,7 @@ def main(argv):
 
     if ext == 'l':
     	filename += 'c'
+
     flags, protos = Parser(filename).parse()
     interpreter = Interpreter(flags, protos)
     interpreter.run()

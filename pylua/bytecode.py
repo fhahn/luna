@@ -15,93 +15,35 @@ import array
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
 
-from pylua.instructions import *
+from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
+from pylua.luaframe import LuaFrame
 
-OP_CODES = [
-    ISLT, ISGE, ISLE, ISGT, ISEQV, ISNEV, ISEQS, ISNES, ISEQN, ISNEN, ISEQP,
-    ISNEP, ISTC, ISFC, IST, ISF, MOV, NOT, UNM, LEN, ADDVN, SUBVN, MULVN, 
-    DIVVN, MODVN, ADDNV, SUBNV, MULNV, DIVNV, MODNV, ADDVV, SUBVV, MULVV, 
-    DIVVV, MODVV, POW, CAT, KSTR, KCDATA, KSHORT, KNUM, KPRI, KNIL, UGET,
-    USETV, USETS, USETN, USETP, UCLO, FNEW, TNEW, TDUP, GGET, GSET, TGETV,
-    TGETS, TGETB, TSETV, TSETS, TSETB, TSETM, CALLM, CALL, CALLMT, CALLT,
-    ITERC, ITERN, VARG, ISNEXT, RETM, RET, RET0, RET1, FORI, JFORI, FORL,
-    IFORL, JFORL, ITERL, IITERL, JITERL, LOOP, ILOOP, JLOOP, JMP, FUNCF,
-    IFUNCF, JFUNCF, FUNCV, IFUNCV, JFUNCV, FUNCC, FUNCCW
-]
-OP_DEF = {
-    KSHORT: {'A': 'dst', 'D': 'lits'},
-    GSET:   {'A': 'var', 'D': 'str'},
-    RET0:   {'A': 'rbase', 'D': 'lit'}
-}
+
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR"]
 
 
-class Arg(object):
-    def __init__(self, val):
-        self.val = val
 
-class Proto(object):
 
-    def __init__(self, p):
-        self.flags = p.byte()
-        self.num_params = p.byte()
-        self.frame_size = p.byte()
-        num_uv = p.byte()
-        num_kgc = p.uleb()
-        num_kn = p.uleb()
-        num_bc = p.uleb()
-
-        self.instructions = []
-        print("found "+ str(num_bc) + " bc instructions")
-        for i in xrange(0, num_bc):
-            self.instructions.append(self.decode_opcode(p.word()))
-
-        uv_data = []
-        for i in xrange(0, num_uv):
-            uv = p.h()
-            uv_data.append((uv & 0x8000, uv & 0x4000, uv & 0x3fff))
-
-        self.constants = []
-
-        #TODO imlement constant parsing
-        for i in xrange(0, num_kgc):
-            # STR constant parsing
-            c_type = "STR"
-            l = kgc_type = p.uleb()
-            l -= 5 # Offset for STR enum
-            assert l > 0
-            self.constants.append(p.bytes[p.pos:p.pos+l])
-            p.pos += l
-        self.num_consts = len(self.constants)
-        print(self.constants, self.instructions)
-
-    def decode_opcode(self, word):
-        ind = word & 0xff
-        code = OP_CODES[ind]
-        ins = code(word)
-        assert isinstance(ins, AbstractInstruction)
-        return ins
-
-    """
-    def decode_arg(self, type, val):
-        if type == 'lit':  # literal
-            return Arg(val >> 0)#?
-        elif type == 'lits': # signed literal
-            return Arg(0x10000 - val if (val & 0x8000) > 0 else val)
-        elif type == 'pri':
-            if val == 0: return Arg(None)
-            elif val == 1: return Arg(False)
-            elif val == 2: return Arg(True)
-            else: assert 0 
-        elif type == 'num': return Arg(val) #return self.constants[val]
-        elif type in ('str', 'tab', 'func', 'cdata'):
-            return Arg(self.constants[self.num_consts-val-1])
-        elif type == 'jump':
-            return Arg(val - 0x8000)
-        else:
-         return Arg(val)
-    """
+"""
+def decode_arg(self, type, val):
+    if type == 'lit':  # literal
+        return Arg(val >> 0)#?
+    elif type == 'lits': # signed literal
+        return Arg(0x10000 - val if (val & 0x8000) > 0 else val)
+    elif type == 'pri':
+        if val == 0: return Arg(None)
+        elif val == 1: return Arg(False)
+        elif val == 2: return Arg(True)
+        else: assert 0 
+    elif type == 'num': return Arg(val) #return self.constants[val]
+    elif type in ('str', 'tab', 'func', 'cdata'):
+        return Arg(self.constants[self.num_consts-val-1])
+    elif type == 'jump':
+        return Arg(val - 0x8000)
+    else:
+     return Arg(val)
+"""
 
 
 
@@ -158,14 +100,62 @@ class Parser(object):
         flags = self.uleb()
 
         # proto+    
-        protos = []
+        frames = []
         while True:
             l = self.uleb()
-            protos.append(Proto(self))
+            frames.append(self.parse_frame())
             # peek at next byte only, do not consume
             if self.peek() == 0:
                 break
         # 0U and EOF
         if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
         if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
-        return (flags, protos)
+        return (flags, frames)
+
+    def parse_frame(self):
+        flags = self.byte()
+        num_params = self.byte()
+        frame_size = self.byte()
+        num_uv = self.byte()
+        num_kgc = self.uleb()
+        num_kn = self.uleb()
+        num_bc = self.uleb()
+
+        instructions = []
+        print("found "+ str(num_bc) + " bc instructions")
+        for i in xrange(0, num_bc):
+            instructions.append(self.decode_opcode(self.word()))
+
+        uv_data = []
+        for i in xrange(0, num_uv):
+            uv = self.h()
+            uv_data.append((uv & 0x8000, uv & 0x4000, uv & 0x3fff))
+
+        constants = []
+
+        #TODO imlement constant parsing
+        for i in xrange(0, num_kgc):
+            # STR constant parsing
+            c_type = "STR"
+            l = kgc_type = self.uleb()
+            l -= 5 # Offset for STR enum
+            assert l > 0
+            constants.append(self.bytes[self.pos:self.pos+l])
+            self.pos += l
+
+        print(constants, instructions)
+        return LuaFrame(flags, constants, instructions)
+
+    def decode_opcode(self, word):
+        ind = word & 0xff
+        op_desc = OP_DESC[ind]
+        args_type = op_desc.args_type
+        args = (None, None, None)
+        a = (word >> 8) & 0xff
+        if args_type == ARGS_AD:
+            args =  (a, word >> 16, None)
+        elif args_type == ARGS_ABC:
+            args = (a, (word >> 16) & 0xff, word >> 24)
+        else:
+            raise ValueError('Invalid argument type')
+        return (ind, args)
