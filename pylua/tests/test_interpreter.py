@@ -38,3 +38,13 @@ class TestInterpreter(object):
                 return x+10
                 """)
         assert ret.returnvalue == 131082
+
+    def test_float_add(self):
+        ret = codetest("""
+                x = 6.5
+                y = 1.2
+                return x + y
+                """)
+        assert ret.returnvalue == 7.7
+
+

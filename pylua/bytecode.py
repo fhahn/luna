@@ -8,9 +8,11 @@
 
 """
 import os
+import struct
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
+from rpython.rlib.rstruct.ieee import float_unpack
 from rpython.rlib.unroll import unrolling_iterable
 
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
@@ -170,10 +172,15 @@ class Parser(object):
         isnum = self.peek() & 1;
         lo = self.uleb() >> 1
         if isnum == 1:
-            raise NotImplementedError("Other knum parsing isn't implemented yet")
-        else:
-            print isnum, lo
-        
+            """
+            IEEE 64 bit floating point constant
+            """
+            hi = self.uleb()
+            hi = hi << 32
+            res = float_unpack(lo | hi, 8)
+            # TODO n_val can be a float or a int, can this lead
+            # to problems when translating?
+            return Constant(n_val=res)
         return Constant(n_val=lo)
                     
 
