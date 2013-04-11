@@ -11,13 +11,15 @@ import os
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
+from rpython.rlib.unroll import unrolling_iterable
 
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
 from pylua.luaframe import LuaFrame
 
 
 
-KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR"]
+#KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]
+#UNROLLED_KGC_TYPES = unrolling_iterable(KGC_TYPES)
 
 """
 def decode_arg(self, type, val):
@@ -39,6 +41,15 @@ def decode_arg(self, type, val):
      return Arg(val)
 """
 
+# TODO: is there a better way to save different types in the constants list
+class Constant(object):
+    _immutable_ = True
+    def __init__(self, s_val="", n_val=0):
+        self.s_val = s_val
+        self.n_val = n_val
+
+    def getval(self):
+        return self.val
 
 class Parser(object):
     def __init__(self,  filename):
@@ -119,28 +130,52 @@ class Parser(object):
         for i in xrange(0, num_bc):
             instructions.append(self.decode_opcode(self.word()))
 
+        print "num uv", num_uv
         uv_data = []
         for i in xrange(0, num_uv):
             uv = self.h()
             uv_data.append((uv & 0x8000, uv & 0x4000, uv & 0x3fff))
 
-        constants = []
+        constants = [None] * (num_kgc+num_kn)
 
         #TODO imlement constant parsing
         for i in xrange(0, num_kgc):
-            # STR constant parsing
-            c_type = "STR"
-            l = kgc_type = self.uleb()
-            l -= 5 # Offset for STR enum
-            assert l > 0
-            constants.append(self.bytes[self.pos:self.pos+l])
-            self.pos += l
+            u = self.uleb()
+            """
+            kgc_type = KGC_TYPES[u]
+            for t in UNROLLED_KGC_TYPES:
+                if t == kgc_type:
+                    meth = getattr(self, t)
+            """
+            constants[num_kn+i] = self.const_str(u)
+
+        for i in xrange(0, num_kn):
+            print "read knum"
+            constants[i] = self.read_knum()
 
         print constants
         for (ind, args) in instructions:
             print OP_DESC[ind].name, args
 
         return LuaFrame(flags, constants, instructions)
+
+    def const_str(self, l):
+        l -= 5 # Offset for STR enum
+        assert l > 0
+        v = self.bytes[self.pos:self.pos+l]
+        self.pos += l
+        return Constant(s_val=v)
+
+    def read_knum(self):
+        isnum = self.peek() & 1;
+        lo = self.uleb() >> 1
+        if isnum == 1:
+            raise NotImplementedError("Other knum parsing isn't implemented yet")
+        else:
+            print isnum, lo
+        
+        return Constant(n_val=lo)
+                    
 
     def decode_opcode(self, word):
         ind = word & 0xff

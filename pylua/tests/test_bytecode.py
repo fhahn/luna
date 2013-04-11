@@ -46,7 +46,7 @@ class TestParser:
         flags, protos = p.parse()
         proto = protos[0]
 
-        assert proto.constants == ['x']
+        assert proto.constants[0].s_val == 'x'
         assert proto.instructions == [
             (39, (0, 1, 0)), (53, (0, 0, 0)), (71, (0, 1, 0))
         ]
