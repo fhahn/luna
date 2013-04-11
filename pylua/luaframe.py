@@ -84,7 +84,14 @@ class LuaFrame(object):
 
     def LEN(self, args): raise NotImplementedError('LEN not implemented') 
 
-    def ADDVN(self, args): raise NotImplementedError('ADDVN not implemented') 
+    def ADDVN(self, args):
+        """
+        A: dst, B: var, C: num
+        """
+        v1 = self.registers[args[1]]
+        v2 = self.get_num_constant(args[2])
+        print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
+        self.registers[args[0]] = v1 + v2
 
     def SUBVN(self, args): raise NotImplementedError('SUBVN not implemented') 
 
@@ -175,6 +182,7 @@ class LuaFrame(object):
        get global
        """
        key = self.get_str_constant(args[1])
+       print("GGET: get %s in R %s" % (key, args[0]))
        self.registers[args[0]] = self.globals[key]
 
     def GSET(self, args):

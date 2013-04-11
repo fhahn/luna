@@ -57,7 +57,7 @@ def_op('UNM', 18, ARGS_AD)
 
 def_op('LEN', 19, ARGS_AD)
 
-def_op('ADDVN', 20, ARGS_AD)
+def_op('ADDVN', 20, ARGS_ABC)
 
 def_op('SUBVN', 21, ARGS_AD)
 

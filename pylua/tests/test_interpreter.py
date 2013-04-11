@@ -3,7 +3,7 @@ from .helpers import codetest
 
 class TestInterpreter(object):
 
-    def test_simple_add(self):
+    def test_short_add(self):
         """
         Tests addition with 16 bit number constants
         """
@@ -18,6 +18,7 @@ class TestInterpreter(object):
     def test_long_add(self):
         """
         Tests addition with number constants > 16 bit
+        used instructions: KNUM, GSET, GGET, ADDVV, RET1
         """
         ret = codetest("""
                 x = 131072
@@ -27,4 +28,13 @@ class TestInterpreter(object):
                 """)
         assert ret.returnvalue == 262144
 
-
+    def test_add_constant_to_var(self):
+        """
+        Tests adding a constant to a variable,
+        used instructions: KNUM, GSET, GGET, ADDVN, RET1
+        """
+        ret = codetest("""
+                x = 131072
+                return x+10
+                """)
+        assert ret.returnvalue == 131082
