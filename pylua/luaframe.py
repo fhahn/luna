@@ -38,8 +38,11 @@ class LuaFrame(object):
     def decode_lits(self, val):
         return 0x10000 - val if (val & 0x8000) > 0 else val
 
-    def get_constant(self, val):
-        return self.constants[self.num_constants-val-1]
+    def get_str_constant(self, val):
+        return self.constants[self.num_constants-val-1].s_val
+
+    def get_num_constant(self, val):
+        return self.constants[val].n_val
 
     def ISLT(self, args): raise NotImplementedError('ISLT not implemented') 
 
@@ -136,7 +139,13 @@ class LuaFrame(object):
         print("KSHORT: set R %d to %d" %(args[0], val))
         self.registers[args[0]] = val
 
-    def KNUM(self, args): raise NotImplementedError('KNUM not implemented') 
+    def KNUM(self, args):
+        """
+        A: dst, D: num
+        Set A to number constant D
+        """
+        val = self.get_num_constant(args[1])
+        self.registers[args[0]] = val
 
     def KPRI(self, args): raise NotImplementedError('KPRI not implemented') 
 
@@ -165,7 +174,7 @@ class LuaFrame(object):
        A: dst, D: str
        get global
        """
-       key = self.get_constant(args[1])
+       key = self.get_str_constant(args[1])
        self.registers[args[0]] = self.globals[key]
 
     def GSET(self, args):
@@ -173,7 +182,7 @@ class LuaFrame(object):
         A: dst, D: str
         Set Global
         """
-        key = self.get_constant(args[1])
+        key = self.get_str_constant(args[1])
         val = self.registers[args[0]]
         print('GSET: set global %s to %s' %(key, val))
         self.globals[key] = val
