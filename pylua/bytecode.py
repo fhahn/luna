@@ -186,7 +186,7 @@ class Parser(object):
         if args_type == ARGS_AD:
             args =  (a, word >> 16, 0)
         elif args_type == ARGS_ABC:
-            args = (a, (word >> 16) & 0xff, word >> 24)
+            args = (a, word >> 24, (word >> 16) & 0xff)
         else:
             raise ValueError('Invalid argument type')
         return (ind, args)
