@@ -13,4 +13,8 @@ install:
 
 
 # command to run tests
-script: PATH=$PATH:`pwd`/lua/ PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"` python runtests.py
+script: 
+  - export PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"`
+  - export PATH=$PATH:`pwd`/lua/ 
+  - python runtests.py
+  - make RPY=../pypy-pypy*/rpython/bin/rpython pylua
