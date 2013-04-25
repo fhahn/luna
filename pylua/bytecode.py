@@ -16,7 +16,8 @@ from rpython.rlib.rstruct.ieee import float_unpack
 from rpython.rlib.unroll import unrolling_iterable
 
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
-from pylua.luaframe import LuaFrame
+from pylua.luaframe import LuaBytecodeFrame
+from pylua.helpers import debug_print, Constant
 
 
 
@@ -42,16 +43,6 @@ def decode_arg(self, type, val):
     else:
      return Arg(val)
 """
-
-# TODO: is there a better way to save different types in the constants list
-class Constant(object):
-    _immutable_ = True
-    def __init__(self, s_val="", n_val=0):
-        self.s_val = s_val
-        self.n_val = n_val
-
-    def getval(self):
-        return self.val
 
 class Parser(object):
     def __init__(self,  filename):
@@ -128,11 +119,11 @@ class Parser(object):
         num_bc = self.uleb()
 
         instructions = []
-        print("found "+ str(num_bc) + " bc instructions")
+        debug_print("found "+ str(num_bc) + " bc instructions")
         for i in xrange(0, num_bc):
             instructions.append(self.decode_opcode(self.word()))
 
-        print "num uv", num_uv
+        debug_print("num uv "+str(num_uv))
         uv_data = []
         for i in xrange(0, num_uv):
             uv = self.h()
@@ -152,14 +143,14 @@ class Parser(object):
             constants[num_kn+i] = self.const_str(u)
 
         for i in xrange(0, num_kn):
-            print "read knum"
+            debug_print("read knum")
             constants[i] = self.read_knum()
 
-        print constants
+        debug_print(str(constants))
         for (ind, args) in instructions:
-            print OP_DESC[ind].name, args
+            debug_print(str(OP_DESC[ind].name)+" "+str(args))
 
-        return LuaFrame(flags, constants, instructions)
+        return LuaBytecodeFrame(flags, constants, instructions)
 
     def const_str(self, l):
         l -= 5 # Offset for STR enum

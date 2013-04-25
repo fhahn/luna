@@ -1,12 +1,17 @@
 from pylua.opcodes import unrolled_op_desc
+from pylua.objspace import ObjectSpace
+from pylua.helpers import debug_print, Constant
+
 
 
 class SReturnValue(object):
     """Signals a 'return' statement.
     Argument is the wrapped object to return."""
     _immutable_ = True
+
     def __init__(self, returnvalue):
         self.returnvalue = returnvalue
+
 
 class LuaFrame(object):
     def __init__(self, flags, constants, instructions):
@@ -15,24 +20,35 @@ class LuaFrame(object):
         self.num_constants = len(constants)
         self.instructions = instructions
         self.num_instructions = len(instructions)
-        self.globals = {}
         # TODO check bounds
-        self.registers = [0] * 10
+        self.registers = [Constant(n_val=0)] * 10
+        self.space = ObjectSpace()
 
-    def execute_frame(self):
+
+class LuaBuiltinFrame(LuaFrame):
+    def __init__(self, function):
+        self.function = function
+
+    def call1(self, arg):
+        self.function(arg)
+
+
+class LuaBytecodeFrame(LuaFrame):
+    def execute_frame(self, space):
         pc = 0
+        self.space = space
         while True:
             i_opcode, i_args = self.instructions[pc]
             pc += 1
 
-            for op_desc in unrolled_op_desc:   
+            for op_desc in unrolled_op_desc:
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
                     returnvalue = meth(i_args)
                     if returnvalue is not None:
                         return SReturnValue(returnvalue)
 
-            if  pc == self.num_instructions:
+            if pc == self.num_instructions:
                 break
 
     def decode_lits(self, val):
@@ -88,10 +104,10 @@ class LuaFrame(object):
         """
         A: dst, B: var, C: num
         """
-        v1 = self.registers[args[1]]
+        v1 = self.registers[args[1]].n_val
         v2 = self.get_num_constant(args[2])
-        print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
-        self.registers[args[0]] = v1 + v2
+        debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
+        self.registers[args[0]] = Constant(n_val=v1 + v2)
 
     def SUBVN(self, args): raise NotImplementedError('SUBVN not implemented') 
 
@@ -116,10 +132,10 @@ class LuaFrame(object):
         A: dst, B: var, C: var
         Sets A to B + C
         """
-        val1 = self.registers[args[1]]
-        val2 = self.registers[args[2]]
-        print("ADDVV: Reg %d = %s + %s" % (args[0], val1, val2))
-        self.registers[args[0]] = val1 + val2
+        val1 = self.registers[args[1]].n_val
+        val2 = self.registers[args[2]].n_val
+        debug_print("ADDVV: Reg %d = %s + %s" % (args[0], val1, val2))
+        self.registers[args[0]] = Constant(n_val=val1 + val2)
 
     def SUBVV(self, args): raise NotImplementedError('SUBVV not implemented') 
 
@@ -143,8 +159,8 @@ class LuaFrame(object):
         Set A to 16 bit signed integer D
         """
         val = self.decode_lits(args[1])
-        print("KSHORT: set R %d to %d" %(args[0], val))
-        self.registers[args[0]] = val
+        debug_print("KSHORT: set R %d to %d" %(args[0], val))
+        self.registers[args[0]] = Constant(n_val=val)
 
     def KNUM(self, args):
         """
@@ -152,7 +168,7 @@ class LuaFrame(object):
         Set A to number constant D
         """
         val = self.get_num_constant(args[1])
-        self.registers[args[0]] = val
+        self.registers[args[0]] = Constant(n_val=val)
 
     def KPRI(self, args): raise NotImplementedError('KPRI not implemented') 
 
@@ -182,8 +198,8 @@ class LuaFrame(object):
        get global
        """
        key = self.get_str_constant(args[1])
-       print("GGET: get %s in R %s" % (key, args[0]))
-       self.registers[args[0]] = self.globals[key]
+       debug_print("GGET: get %s in R %s" % (key, args[0]))
+       self.registers[args[0]] = self.space.globals[key]
 
     def GSET(self, args):
         """
@@ -192,8 +208,8 @@ class LuaFrame(object):
         """
         key = self.get_str_constant(args[1])
         val = self.registers[args[0]]
-        print('GSET: set global %s to %s' %(key, val))
-        self.globals[key] = val
+        debug_print('GSET: set global %s to %s' %(key, val))
+        self.space.globals[key] = val
 
     def TGETV(self, args): raise NotImplementedError('TGETV not implemented') 
 
@@ -211,7 +227,8 @@ class LuaFrame(object):
 
     def CALLM(self, args): raise NotImplementedError('CALLM not implemented') 
 
-    def CALL(self, args): raise NotImplementedError('CALL not implemented') 
+    def CALL(self, args):
+        self.registers[args[0]].f_val.call1(self.registers[args[0]+1].n_val)
 
     def CALLMT(self, args): raise NotImplementedError('CALLMT not implemented') 
 
@@ -234,7 +251,7 @@ class LuaFrame(object):
         A: rbase, D: lit
         Return without value
         """
-        print("RET0 called")
+        debug_print("RET0 called")
         return 0
 
     def RET1(self, args):
@@ -242,8 +259,9 @@ class LuaFrame(object):
         A: rbase, D: lit
         Return with exactly one value, R(A) holds the value
         """
-        retval = self.registers[args[0]]
-        print('RET1: return %s' % retval)
+        # TODO only numbers at the moment
+        retval = self.registers[args[0]].n_val
+        debug_print('RET1: return %s' % retval)
         return retval
 
     def FORI(self, args): raise NotImplementedError('FORI not implemented') 

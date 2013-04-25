@@ -1,3 +1,11 @@
+from pylua.objspace import ObjectSpace
+from pylua.luaframe import LuaBuiltinFrame, SReturnValue
+from pylua.helpers import debug_print
+from pylua.bytecode import Constant
+
+def m_print(arg):
+    print(arg)
+
 class Interpreter(object):
     def __init__(self, flags, frames):
         self.flags = flags
@@ -6,14 +14,16 @@ class Interpreter(object):
 
     def run(self):
         returnvalue = None
+        space = ObjectSpace()
+        space.globals['print'] = Constant(f_val=LuaBuiltinFrame(m_print))
         while True:
             frame_ind = 0
             next_frame = self.frames[frame_ind]
             frame_ind += 1
 
-            returnvalue = next_frame.execute_frame()
+            returnvalue = next_frame.execute_frame(space)
             if frame_ind == self.num_frames or returnvalue is not None:
                 break
 
-        print("Finished intepreting")
+        debug_print("Finished intepreting")
         return returnvalue
