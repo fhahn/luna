@@ -3,6 +3,9 @@ from pylua.luaframe import LuaBuiltinFrame, SReturnValue
 from pylua.helpers import debug_print
 from pylua.bytecode import Constant
 
+"""
+prints arg to std out
+"""
 def m_print(arg):
     print(arg)
 
@@ -15,6 +18,8 @@ class Interpreter(object):
     def run(self):
         returnvalue = None
         space = ObjectSpace()
+        # register a global print function, only works with one argument at the
+        # moment and is a hack
         space.globals['print'] = Constant(f_val=LuaBuiltinFrame(m_print))
         while True:
             frame_ind = 0
