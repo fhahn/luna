@@ -9,6 +9,8 @@ class TestCompiled(object):
     Tests compiled binary
     """
 
+    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../bin/pylua'))
+
     def test_addition(self, capsys):
         f = test_file(src="""
             -- short add
@@ -25,5 +27,5 @@ class TestCompiled(object):
             --print(lx+1234567890)
             """, suffix=".l"
         )
-        out =  subprocess.check_output(['bin/pylua', f.name])
+        out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "20.000000\n25.000000\n1334567889.000000\n"
