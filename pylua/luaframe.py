@@ -35,20 +35,23 @@ class LuaBuiltinFrame(LuaFrame):
 
 class LuaBytecodeFrame(LuaFrame):
     def execute_frame(self, space):
-        pc = 0
+        next_instr = 0
         self.space = space
         while True:
-            i_opcode, i_args = self.instructions[pc]
-            pc += 1
+            i_opcode, i_args = self.instructions[next_instr]
 
             for op_desc in unrolled_op_desc:
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
-                    returnvalue = meth(i_args)
-                    if returnvalue is not None:
-                        return SReturnValue(returnvalue)
+                    next_offset = meth(i_args)
+                    if op_desc.name in ('RET0', 'RET1', 'RET'):
+                        ret_val = SReturnValue(next_offset)
+                        return ret_val
+                    if next_offset is None:
+                        next_offset = 1
+                    next_instr += next_offset
 
-            if pc == self.num_instructions:
+            if next_instr == self.num_instructions:
                 break
 
     def decode_lits(self, val):
