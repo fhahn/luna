@@ -21,8 +21,10 @@ class LuaFrame(object):
         self.instructions = instructions
         self.num_instructions = len(instructions)
         # TODO check bounds
-        self.registers = [Constant(n_val=0)] * 10
         self.space = ObjectSpace()
+
+        self.registers = [Constant(n_val=0)] * 10
+        self.cmp_result = False
 
 
 class LuaBuiltinFrame(LuaFrame):
@@ -34,6 +36,7 @@ class LuaBuiltinFrame(LuaFrame):
 
 
 class LuaBytecodeFrame(LuaFrame):
+
     def execute_frame(self, space):
         next_instr = 0
         self.space = space
@@ -43,16 +46,17 @@ class LuaBytecodeFrame(LuaFrame):
             for op_desc in unrolled_op_desc:
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
-                    next_offset = meth(i_args)
+                    res = meth(i_args)
                     if op_desc.name in ('RET0', 'RET1', 'RET'):
-                        ret_val = SReturnValue(next_offset)
+                        ret_val = SReturnValue(res)
                         return ret_val
-                    if next_offset is None:
-                        next_offset = 1
-                    next_instr += next_offset
+                    # TODO: return -1 everywhere
+                    if res is None or res == -1:
+                        next_instr += 1
+                    else:
+                        next_instr = res
 
-            if next_instr == self.num_instructions:
-                break
+            if next_instr >= self.num_instructions: break
 
     def decode_lits(self, val):
         return 0x10000 - val if (val & 0x8000) > 0 else val
@@ -81,8 +85,14 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISEQN(self, args): raise NotImplementedError('ISEQN not implemented') 
 
-    def ISNEN(self, args): raise NotImplementedError('ISNEN not implemented') 
-
+    def ISNEN(self, args):
+        """
+        A: var, D: num
+        """
+        var = self.registers[args[0]]
+        num = self.get_num_constant(args[1])
+        self.cmp_result = (var.n_val != num)
+        
     def ISEQP(self, args): raise NotImplementedError('ISEQP not implemented') 
 
     def ISNEP(self, args): raise NotImplementedError('ISNEP not implemented') 
@@ -289,7 +299,15 @@ class LuaBytecodeFrame(LuaFrame):
 
     def JLOOP(self, args): raise NotImplementedError('JLOOP not implemented') 
 
-    def JMP(self, args): raise NotImplementedError('JMP not implemented') 
+    def JMP(self, args): 
+        """
+        A: Rbase, D: jmp (next instr)
+        """
+        if self.cmp_result:
+            return args[1]
+        else:
+            # rpython does not like returning None here
+            return -1
 
     def FUNCF(self, args): raise NotImplementedError('FUNCF not implemented') 
 
