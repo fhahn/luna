@@ -126,4 +126,48 @@ class TestIf(object):
                 """)
         assert ret.returnvalue == 9
 
+    def test_iseqv_true_with_neq(self):
+        ret = codetest("""
+                x = "foo"
+                y = "bar"
+                if x ~= y then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_iseqv_false_with_neq(self):
+        ret = codetest("""
+                x = 101
+                y = 101
+                if x ~= y then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
+    def test_isneqv_true_with_eq(self):
+        ret = codetest("""
+                x = "foo"
+                y = "foo"
+                if x == y then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_isneqv_false_with_eq(self):
+        ret = codetest("""
+                x = true
+                y = false
+                if x == y then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
 

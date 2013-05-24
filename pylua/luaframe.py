@@ -79,14 +79,28 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISGT(self, args): raise NotImplementedError('ISGT not implemented') 
 
-    def ISEQV(self, args): raise NotImplementedError('ISEQV not implemented') 
+    def ISEQV(self, args):
+        """
+        A: var, D: var
+        A == D
+        """
+        w_x = self.registers[args[0]]
+        w_y = self.registers[args[1]]
+        self.cmp_result = w_x.eq(w_y)
 
-    def ISNEV(self, args): raise NotImplementedError('ISNEV not implemented') 
+    def ISNEV(self, args):
+        """
+        A: var, D: var
+        A != D
+        """
+        w_x = self.registers[args[0]]
+        w_y = self.registers[args[1]]
+        self.cmp_result = w_x.neq(w_y)
 
     def ISEQS(self, args):
         """
         A: var, D: str
-        A != D
+        A == D
         """
         w_var = self.registers[args[0]]
         w_str = self.get_str_constant(args[1])
