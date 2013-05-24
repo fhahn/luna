@@ -62,3 +62,16 @@ class W_Func(W_Object):
 
     def getval(self):
         return self.f_val
+
+class W_Pri(W_Num):
+    def __init__(self, val):
+        assert val in (0, 1, 2)
+        self.n_val = val
+
+    def to_str(self):
+        if self.n_val == 0:
+            return 'nil'
+        elif self.n_val == 1:
+            return 'false'
+        else:
+            return 'true'

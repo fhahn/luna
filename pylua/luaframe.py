@@ -1,6 +1,6 @@
 from pylua.opcodes import unrolled_op_desc
 from pylua.objspace import ObjectSpace
-from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func
+from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func, W_Pri
 
 
 
@@ -103,9 +103,23 @@ class LuaBytecodeFrame(LuaFrame):
         w_num = self.constants[args[1]]
         self.cmp_result = w_var.neq(w_num)
 
-    def ISEQP(self, args): raise NotImplementedError('ISEQP not implemented') 
+    def ISEQP(self, args):
+        """
+        A: var, D: pri
+        A == D
+        """
+        w_var = self.registers[args[0]]
+        w_pri = W_Pri(args[1])
+        self.cmp_result = w_var.eq(w_pri)
 
-    def ISNEP(self, args): raise NotImplementedError('ISNEP not implemented') 
+    def ISNEP(self, args):
+        """
+        A: var, D: pri
+        A != D
+        """
+        w_var = self.registers[args[0]]
+        w_pri = W_Pri(args[1])
+        self.cmp_result = w_var.neq(w_pri)
 
     def ISTC(self, args): raise NotImplementedError('ISTC not implemented') 
 
@@ -199,7 +213,12 @@ class LuaBytecodeFrame(LuaFrame):
         val = self.get_num_constant(args[1])
         self.registers[args[0]] = W_Num(val)
 
-    def KPRI(self, args): raise NotImplementedError('KPRI not implemented') 
+    def KPRI(self, args):
+        """
+        A: dst, D pri
+        sets dst register to pri
+        """
+        self.registers[args[0]] = W_Pri(args[1])
 
     def KNIL(self, args): raise NotImplementedError('KNIL not implemented') 
 
