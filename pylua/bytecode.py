@@ -17,7 +17,7 @@ from rpython.rlib.unroll import unrolling_iterable
 
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
 from pylua.luaframe import LuaBytecodeFrame
-from pylua.helpers import debug_print, Constant
+from pylua.helpers import debug_print, W_Str, W_Num
 
 
 
@@ -157,7 +157,7 @@ class Parser(object):
         assert l > 0
         v = self.bytes[self.pos:self.pos+l]
         self.pos += l
-        return Constant(s_val=v)
+        return W_Str(v)
 
     def read_knum(self):
         isnum = self.peek() & 1;
@@ -171,9 +171,8 @@ class Parser(object):
             res = float_unpack(lo | hi, 8)
             # TODO n_val can be a float or a int, can this lead
             # to problems when translating?
-            return Constant(n_val=res)
-        return Constant(n_val=lo)
-                    
+            return W_Num(res)
+        return W_Num(lo)
 
     def decode_opcode(self, word):
         ind = word & 0xff

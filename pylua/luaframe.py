@@ -1,6 +1,6 @@
 from pylua.opcodes import unrolled_op_desc
 from pylua.objspace import ObjectSpace
-from pylua.helpers import debug_print, Constant
+from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func
 
 
 
@@ -23,7 +23,7 @@ class LuaFrame(object):
         # TODO check bounds
         self.space = ObjectSpace()
 
-        self.registers = [Constant(n_val=0)] * 10
+        self.registers = [W_Object()] * 10
         self.cmp_result = False
 
 
@@ -62,10 +62,14 @@ class LuaBytecodeFrame(LuaFrame):
         return 0x10000 - val if (val & 0x8000) > 0 else val
 
     def get_str_constant(self, val):
-        return self.constants[self.num_constants-val-1].s_val
+        w_v = self.constants[self.num_constants-val-1]
+        assert isinstance(w_v, W_Str)
+        return w_v.getval()
 
     def get_num_constant(self, val):
-        return self.constants[val].n_val
+        w_v = self.constants[val]
+        assert isinstance(w_v, W_Num)
+        return w_v.getval()
 
     def ISLT(self, args): raise NotImplementedError('ISLT not implemented') 
 
@@ -87,17 +91,17 @@ class LuaBytecodeFrame(LuaFrame):
         """
         A: var, D: num
         """
-        var = self.registers[args[0]]
-        num = self.get_num_constant(args[1])
-        self.cmp_result = (var.n_val == num)
+        w_var = self.registers[args[0]]
+        w_num = self.constants[args[1]]
+        self.cmp_result = w_var.eq(w_num) 
 
     def ISNEN(self, args):
         """
         A: var, D: num
         """
-        var = self.registers[args[0]]
-        num = self.get_num_constant(args[1])
-        self.cmp_result = (var.n_val != num)
+        w_var = self.registers[args[0]]
+        w_num = self.constants[args[1]]
+        self.cmp_result = w_var.neq(w_num)
 
     def ISEQP(self, args): raise NotImplementedError('ISEQP not implemented') 
 
@@ -123,10 +127,12 @@ class LuaBytecodeFrame(LuaFrame):
         """
         A: dst, B: var, C: num
         """
-        v1 = self.registers[args[1]].n_val
+        w_v1 = self.registers[args[1]]
+        assert isinstance(w_v1, W_Num)
+        v1 = w_v1.getval()
         v2 = self.get_num_constant(args[2])
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
-        self.registers[args[0]] = Constant(n_val=v1 + v2)
+        self.registers[args[0]] = W_Num(v1 + v2)
 
     def SUBVN(self, args): raise NotImplementedError('SUBVN not implemented') 
 
@@ -151,10 +157,14 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, B: var, C: var
         Sets A to B + C
         """
-        val1 = self.registers[args[1]].n_val
-        val2 = self.registers[args[2]].n_val
-        debug_print("ADDVV: Reg %d = %s + %s" % (args[0], val1, val2))
-        self.registers[args[0]] = Constant(n_val=val1 + val2)
+        w_v1 = self.registers[args[1]]
+        assert isinstance(w_v1, W_Num)
+        w_v2 = self.registers[args[2]]
+        assert isinstance(w_v2, W_Num)
+        v1 = w_v1.getval()
+        v2 = w_v2.getval()
+        debug_print("ADDVV: Reg %d = %s + %s" % (args[0], v1, v2))
+        self.registers[args[0]] = W_Num(v1 + v2)
 
     def SUBVV(self, args): raise NotImplementedError('SUBVV not implemented') 
 
@@ -179,7 +189,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         val = self.decode_lits(args[1])
         debug_print("KSHORT: set R %d to %d" %(args[0], val))
-        self.registers[args[0]] = Constant(n_val=val)
+        self.registers[args[0]] = W_Num(val)
 
     def KNUM(self, args):
         """
@@ -187,7 +197,7 @@ class LuaBytecodeFrame(LuaFrame):
         Set A to number constant D
         """
         val = self.get_num_constant(args[1])
-        self.registers[args[0]] = Constant(n_val=val)
+        self.registers[args[0]] = W_Num(val)
 
     def KPRI(self, args): raise NotImplementedError('KPRI not implemented') 
 
@@ -247,7 +257,10 @@ class LuaBytecodeFrame(LuaFrame):
     def CALLM(self, args): raise NotImplementedError('CALLM not implemented') 
 
     def CALL(self, args):
-        self.registers[args[0]].f_val.call1(self.registers[args[0]+1].n_val)
+        w_func = self.registers[args[0]]
+        assert isinstance(w_func, W_Func)
+        func = w_func.getval()
+        func.call1(self.registers[args[0]+1])
 
     def CALLMT(self, args): raise NotImplementedError('CALLMT not implemented') 
 
@@ -280,7 +293,9 @@ class LuaBytecodeFrame(LuaFrame):
         """
         # TODO only numbers at the moment
  
-        retval = self.registers[args[0]].n_val
+        w_v = self.registers[args[0]]
+        assert isinstance(w_v, W_Num)
+        retval = w_v.getval()
         debug_print('RET1: return %s' % retval)
         return retval
 
