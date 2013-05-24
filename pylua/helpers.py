@@ -15,13 +15,16 @@ class W_Object(object):
         return self.val
 
     def eq(self, w_other):
-        raise NotImplementedError('eq not implemented in this class')
+        raise NotImplementedError('eq not supported by this class')
 
     def neq(self, w_other):
-        raise NotImplementedError('neq not implemented in this clas')
+        raise NotImplementedError('neq not supported by this class')
 
     def to_str(self):
-        raise NotImplementedError('to_str not implemented in this class')
+        raise NotImplementedError('to_str not supported by this class')
+
+    def gt(self):
+        raise NotImplementedError('gt not supported by this class')
 
 
 class W_Num(W_Object):
@@ -42,6 +45,10 @@ class W_Num(W_Object):
     def to_str(self):
         return str(self.n_val)
 
+    def gt(self, w_other):
+        assert isinstance(w_other, W_Num)
+        return self.n_val > w_other.n_val
+
 
 class W_Str(W_Object):
     def __init__(self, val):
@@ -60,6 +67,11 @@ class W_Str(W_Object):
 
     def to_str(self):
         return str(self.s_val)
+
+    def gt(self, w_other):
+        assert isinstance(w_other, W_Str)
+        return self.s_val > w_other.s_val
+
 
 
 class W_Func(W_Object):

@@ -77,8 +77,15 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISLE(self, args): raise NotImplementedError('ISLE not implemented') 
 
-    def ISGT(self, args): raise NotImplementedError('ISGT not implemented') 
-
+    def ISGT(self, args):
+        """
+        A: var, D: var
+        A > D
+        """
+        w_x = self.registers[args[0]]
+        w_y = self.registers[args[1]]
+        self.cmp_result = w_x.gt(w_y)
+ 
     def ISEQV(self, args):
         """
         A: var, D: var
