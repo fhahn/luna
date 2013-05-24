@@ -64,7 +64,7 @@ class LuaBytecodeFrame(LuaFrame):
     def get_str_constant(self, val):
         w_v = self.constants[self.num_constants-val-1]
         assert isinstance(w_v, W_Str)
-        return w_v.getval()
+        return w_v
 
     def get_num_constant(self, val):
         w_v = self.constants[val]
@@ -83,9 +83,23 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISNEV(self, args): raise NotImplementedError('ISNEV not implemented') 
 
-    def ISEQS(self, args): raise NotImplementedError('ISEQS not implemented') 
+    def ISEQS(self, args):
+        """
+        A: var, D: str
+        A != D
+        """
+        w_var = self.registers[args[0]]
+        w_str = self.get_str_constant(args[1])
+        self.cmp_result = w_var.eq(w_str) 
 
-    def ISNES(self, args): raise NotImplementedError('ISNES not implemented') 
+    def ISNES(self, args):
+        """
+        A: var, D: str
+        A != D
+        """
+        w_var = self.registers[args[0]]
+        w_str = self.get_str_constant(args[1])
+        self.cmp_result = w_var.neq(w_str) 
 
     def ISEQN(self, args):
         """
@@ -192,7 +206,13 @@ class LuaBytecodeFrame(LuaFrame):
 
     def CAT(self, args): raise NotImplementedError('CAT not implemented') 
 
-    def KSTR(self, args): raise NotImplementedError('KSTR not implemented') 
+    def KSTR(self, args):
+        """
+        A: dst, D: str
+        Set register A to str
+        """
+        w_str = self.get_str_constant(args[1])
+        self.registers[args[0]] = w_str
 
     def KCDATA(self, args): raise NotImplementedError('KCDATA not implemented') 
 
@@ -245,7 +265,7 @@ class LuaBytecodeFrame(LuaFrame):
        A: dst, D: str
        get global
        """
-       key = self.get_str_constant(args[1])
+       key = self.get_str_constant(args[1]).getval()
        debug_print("GGET: get %s in R %s" % (key, args[0]))
        self.registers[args[0]] = self.space.globals[key]
 
@@ -254,7 +274,7 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, D: str
         Set Global
         """
-        key = self.get_str_constant(args[1])
+        key = self.get_str_constant(args[1]).getval()
         val = self.registers[args[0]]
         debug_print('GSET: set global %s to %s' %(key, val))
         self.space.globals[key] = val

@@ -51,6 +51,13 @@ class W_Str(W_Object):
     def getval(self):
         return self.s_val
 
+    def eq(self, w_other):
+        assert isinstance(w_other, W_Str)
+        return self.s_val == w_other.getval()
+
+    def neq(self, w_other):
+        return not self.eq(w_other)
+
     def to_str(self):
         return str(self.s_val)
 

@@ -85,3 +85,45 @@ class TestIf(object):
                 return 9
                 """)
         assert ret.returnvalue == 9
+
+    def test_iseqs_true_with_neq(self):
+        ret = codetest("""
+                x = "foo"
+                if x ~= "bar" then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_iseqs_false_with_neq(self):
+        ret = codetest("""
+                x = "foo"
+                if x ~= "foo" then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
+    def test_isneqs_true_with_eq(self):
+        ret = codetest("""
+                x = "foo"
+                if x == "foo" then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_isneqs_false_with_eq(self):
+        ret = codetest("""
+                x = "foo"
+                if x == "bar" then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
+
