@@ -345,3 +345,29 @@ class TestIf(object):
                 return 9
                 """)
         assert ret.returnvalue == 9
+
+    def test_if_else1(self):
+        ret = codetest("""
+                x = 100
+                y = 50
+                if x == y then
+                    return 9
+                else 
+                    return 2
+                end
+                return -1
+                """)
+        assert ret.returnvalue == 2
+
+    def test_if_else1(self):
+        ret = codetest("""
+                x = 100
+                y = 50
+                if x ~= y then
+                    return 9
+                else 
+                    return 2
+                end
+                return -1
+                """)
+        assert ret.returnvalue == 9
