@@ -137,3 +137,35 @@ class TestCompiled(object):
         )
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "OK1\nOK2\nOK3\nOK4\nOK5\nOK6\nOK7\n"
+
+    def test_if_with_bool(self, capsys):
+        f = test_file(src="""
+            x = true
+            y = false
+            if x == true then
+                print ("OK1")
+            end
+
+            if x ~= true then
+                print ("F1")
+            end
+
+            if x == y then
+                print("F2")
+            end
+
+            if x ~= y then
+                print("OK2")
+            end
+
+            if true == x then
+                print ("OK3")
+            end
+
+            if y == true then
+                print("F3")
+            end
+            """, suffix=".l"
+        )
+        out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
+        assert out == "OK1\nOK2\nOK3\n"
