@@ -20,11 +20,20 @@ class W_Object(object):
     def neq(self, w_other):
         raise NotImplementedError('neq not supported by this class')
 
+    def gt(self, other):
+        raise NotImplementedError('gt not supported by this class')
+
+    def lt(self, other):
+        raise NotImplementedError('lt not supported by this class')
+
+    def ge(self, other):
+        raise NotImplementedError('ge not supported by this class')
+
+    def le(self, other):
+        raise NotImplementedError('le not supported by this class')
+
     def to_str(self):
         raise NotImplementedError('to_str not supported by this class')
-
-    def gt(self):
-        raise NotImplementedError('gt not supported by this class')
 
 
 class W_Num(W_Object):
@@ -46,9 +55,17 @@ class W_Num(W_Object):
         assert isinstance(w_other, W_Num)
         return self.n_val > w_other.n_val
 
+    def lt(self, w_other):
+        assert isinstance(w_other, W_Num)
+        return self.n_val < w_other.n_val
+
     def le(self, w_other):
         assert isinstance(w_other, W_Num)
         return self.n_val <= w_other.n_val
+
+    def ge(self, w_other):
+        assert isinstance(w_other, W_Num)
+        return self.n_val >= w_other.n_val
 
     def to_str(self):
         return str(self.n_val)
@@ -73,9 +90,17 @@ class W_Str(W_Object):
         assert isinstance(w_other, W_Str)
         return self.s_val > w_other.s_val
 
+    def lt(self, w_other):
+        assert isinstance(w_other, W_Str)
+        return self.s_val < w_other.s_val
+
     def le(self, w_other):
         assert isinstance(w_other, W_Str)
         return self.s_val <= w_other.s_val
+
+    def ge(self, w_other):
+        assert isinstance(w_other, W_Str)
+        return self.s_val >= w_other.s_val
 
     def to_str(self):
         return str(self.s_val)

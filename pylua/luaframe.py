@@ -71,9 +71,23 @@ class LuaBytecodeFrame(LuaFrame):
         assert isinstance(w_v, W_Num)
         return w_v.getval()
 
-    def ISLT(self, args): raise NotImplementedError('ISLT not implemented') 
+    def ISLT(self, args):
+        """
+        A: var, D: var
+        A < D
+        """
+        w_x = self.registers[args[0]]
+        w_y = self.registers[args[1]]
+        self.cmp_result = w_x.lt(w_y)
 
-    def ISGE(self, args): raise NotImplementedError('ISGE not implemented') 
+    def ISGE(self, args):
+        """
+        A: var, D: var
+        A >= D
+        """
+        w_x = self.registers[args[0]]
+        w_y = self.registers[args[1]]
+        self.cmp_result = w_x.ge(w_y)
 
     def ISLE(self, args):
         """
@@ -83,7 +97,6 @@ class LuaBytecodeFrame(LuaFrame):
         w_x = self.registers[args[0]]
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.le(w_y)
- 
 
     def ISGT(self, args):
         """
