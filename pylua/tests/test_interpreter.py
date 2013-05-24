@@ -46,27 +46,3 @@ class TestInterpreter(object):
                 return x + y
                 """)
         assert ret.returnvalue == 7.7
-
-    def test_simple_if_cond_true(self):
-        ret = codetest("""
-                x = 1
-                if x == 1 then
-                    return 2
-                end
-                return 9
-                """)
-        assert ret.returnvalue == 2
-    '''
-
-    def test_simple_if_cond_false(self):
-        ret = codetest("""
-                x = 1
-                if x == 2 then
-                    return 2
-                end
-                return 9
-                """)
-        assert ret.returnvalue == 9
-    '''
-
-
