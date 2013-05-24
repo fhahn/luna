@@ -17,5 +17,3 @@ class Constant(object):
 
     def getval(self):
         return self.val
-
-

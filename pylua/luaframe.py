@@ -54,7 +54,7 @@ class LuaBytecodeFrame(LuaFrame):
                     if res is None or res == -1:
                         next_instr += 1
                     else:
-                        next_instr = res
+                        next_instr += res
 
             if next_instr >= self.num_instructions: break
 
@@ -83,7 +83,13 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISNES(self, args): raise NotImplementedError('ISNES not implemented') 
 
-    def ISEQN(self, args): raise NotImplementedError('ISEQN not implemented') 
+    def ISEQN(self, args):
+        """
+        A: var, D: num
+        """
+        var = self.registers[args[0]]
+        num = self.get_num_constant(args[1])
+        self.cmp_result = (var.n_val == num)
 
     def ISNEN(self, args):
         """
@@ -92,7 +98,7 @@ class LuaBytecodeFrame(LuaFrame):
         var = self.registers[args[0]]
         num = self.get_num_constant(args[1])
         self.cmp_result = (var.n_val != num)
-        
+
     def ISEQP(self, args): raise NotImplementedError('ISEQP not implemented') 
 
     def ISNEP(self, args): raise NotImplementedError('ISNEP not implemented') 
@@ -273,6 +279,7 @@ class LuaBytecodeFrame(LuaFrame):
         Return with exactly one value, R(A) holds the value
         """
         # TODO only numbers at the moment
+ 
         retval = self.registers[args[0]].n_val
         debug_print('RET1: return %s' % retval)
         return retval
@@ -304,7 +311,8 @@ class LuaBytecodeFrame(LuaFrame):
         A: Rbase, D: jmp (next instr)
         """
         if self.cmp_result:
-            return args[1]
+            # TODO find out about the offset
+            return args[1] - 32768 + 1
         else:
             # rpython does not like returning None here
             return -1
@@ -323,4 +331,3 @@ class LuaBytecodeFrame(LuaFrame):
 
     def FUNCC(self, args): raise NotImplementedError('FUNCC not implemented') 
 
-    def FUNCCW(self, args): raise NotImplementedError('FUNCCW not implemented')
