@@ -331,3 +331,4 @@ class LuaBytecodeFrame(LuaFrame):
 
     def FUNCC(self, args): raise NotImplementedError('FUNCC not implemented') 
 
+    def FUNCCW(self, args): raise NotImplementedError('FUNCCW not implemented') 
