@@ -42,12 +42,16 @@ class W_Num(W_Object):
     def neq(self, w_other):
         return not self.eq(w_other)
 
-    def to_str(self):
-        return str(self.n_val)
-
     def gt(self, w_other):
         assert isinstance(w_other, W_Num)
         return self.n_val > w_other.n_val
+
+    def le(self, w_other):
+        assert isinstance(w_other, W_Num)
+        return self.n_val <= w_other.n_val
+
+    def to_str(self):
+        return str(self.n_val)
 
 
 class W_Str(W_Object):
@@ -65,12 +69,16 @@ class W_Str(W_Object):
     def neq(self, w_other):
         return not self.eq(w_other)
 
-    def to_str(self):
-        return str(self.s_val)
-
     def gt(self, w_other):
         assert isinstance(w_other, W_Str)
         return self.s_val > w_other.s_val
+
+    def le(self, w_other):
+        assert isinstance(w_other, W_Str)
+        return self.s_val <= w_other.s_val
+
+    def to_str(self):
+        return str(self.s_val)
 
 
 

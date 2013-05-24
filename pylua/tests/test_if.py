@@ -214,4 +214,48 @@ class TestIf(object):
                 """)
         assert ret.returnvalue == 9
 
+    def test_isle_true_with_str(self):
+        ret = codetest("""
+                x = "foo"
+                y = "bar"
+                if not (x <= y) then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_isle_false_with_str(self):
+        ret = codetest("""
+                x = "bar"
+                y = "foo"
+                if not (x <= y) then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
+    def test_isle_true_with_num(self):
+        ret = codetest("""
+                x = 100
+                y = 50
+                if not (x <= y) then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 2
+
+    def test_isle_false_with_num(self):
+        ret = codetest("""
+                x = 50
+                y = 100
+                if not (x <= y) then
+                    return 2
+                end
+                return 9
+                """)
+        assert ret.returnvalue == 9
+
 
