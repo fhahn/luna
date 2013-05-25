@@ -380,11 +380,36 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print('RET1: return %s' % retval)
         return retval
 
-    def FORI(self, args): raise NotImplementedError('FORI not implemented') 
+    def FORI(self, args):
+        #TODO combine FORI and FORL?
+        base = args[0]
+        w_curr = self.registers[base]
+        assert isinstance(w_curr, W_Num)
+        w_end = self.registers[base+1]
+        assert isinstance(w_end, W_Num)
+        w_step = self.registers[base+2]
+        assert isinstance(w_step, W_Num)
+        if (w_curr.n_val+w_step.n_val) > w_end.n_val:
+            return args[1] - 32768 + 1
+        else:
+            return 1
 
     def JFORI(self, args): raise NotImplementedError('JFORI not implemented') 
 
-    def FORL(self, args): raise NotImplementedError('FORL not implemented') 
+    def FORL(self, args):
+        base = args[0]
+        w_curr = self.registers[base]
+        assert isinstance(w_curr, W_Num)
+        w_end = self.registers[base+1]
+        assert isinstance(w_end, W_Num)
+        w_step = self.registers[base+2]
+        assert isinstance(w_step, W_Num)
+        w_curr.n_val += w_step.n_val
+        if w_curr.n_val <= w_end.n_val:
+            return args[1] - 32768 + 1
+        else:
+            return 1
+
 
     def IFORL(self, args): raise NotImplementedError('IFORL not implemented') 
 
