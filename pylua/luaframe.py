@@ -204,7 +204,17 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 + v2)
 
-    def SUBVN(self, args): raise NotImplementedError('SUBVN not implemented') 
+    def SUBVN(self, args):
+        """
+        A: dst, B: var, C: num
+        A = B + C
+        """
+        w_v1 = self.registers[args[1]]
+        assert isinstance(w_v1, W_Num)
+        v1 = w_v1.getval()
+        v2 = self.get_num_constant(args[2])
+        debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
+        self.registers[args[0]] = W_Num(v1 - v2)
 
     def MULVN(self, args): raise NotImplementedError('MULVN not implemented') 
 
@@ -426,7 +436,11 @@ class LuaBytecodeFrame(LuaFrame):
 
     def JITERL(self, args): raise NotImplementedError('JITERL not implemented') 
 
-    def LOOP(self, args): raise NotImplementedError('LOOP not implemented') 
+    def LOOP(self, args): 
+        """
+        No Op, but can be used as loop hint for the jit in future
+        """
+        pass
 
     def ILOOP(self, args): raise NotImplementedError('ILOOP not implemented') 
 
@@ -441,6 +455,7 @@ class LuaBytecodeFrame(LuaFrame):
             return args[1] - 32768 + 1
         else:
             # rpython does not like returning None here
+            self.cmp_result = True
             return -1
 
     def FUNCF(self, args): raise NotImplementedError('FUNCF not implemented') 

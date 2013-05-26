@@ -46,3 +46,10 @@ class TestInterpreter(object):
                 return x + y
                 """)
         assert ret.returnvalue == 7.7
+
+    def test_subvn(self):
+        ret = codetest("""
+                x = 6500
+                return x - 3000
+                """)
+        assert ret.returnvalue == 3500
