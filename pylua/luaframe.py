@@ -59,7 +59,7 @@ class LuaBytecodeFrame(LuaFrame):
             if next_instr >= self.num_instructions: break
 
     def decode_lits(self, val):
-        return 0x10000 - val if (val & 0x8000) > 0 else val
+        return val - 0x10000 if (val & 0x8000) > 0 else val
 
     def get_str_constant(self, val):
         w_v = self.constants[self.num_constants-val-1]
@@ -380,36 +380,41 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print('RET1: return %s' % retval)
         return retval
 
+    def continue_for_loop(self, idx, stop, step):
+        if step >= 0:
+            return idx <= stop
+        else:
+            return idx >= stop
+
     def FORI(self, args):
         #TODO combine FORI and FORL?
         base = args[0]
-        w_curr = self.registers[base]
-        assert isinstance(w_curr, W_Num)
-        w_end = self.registers[base+1]
-        assert isinstance(w_end, W_Num)
+        w_idx = self.registers[base]
+        assert isinstance(w_idx, W_Num)
+        w_stop = self.registers[base+1]
+        assert isinstance(w_stop, W_Num)
         w_step = self.registers[base+2]
         assert isinstance(w_step, W_Num)
-        if (w_curr.n_val+w_step.n_val) > w_end.n_val:
-            return args[1] - 32768 + 1
-        else:
+        if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return 1
+        else:
+            return args[1] - 32768 + 1
 
     def JFORI(self, args): raise NotImplementedError('JFORI not implemented') 
 
     def FORL(self, args):
         base = args[0]
-        w_curr = self.registers[base]
-        assert isinstance(w_curr, W_Num)
-        w_end = self.registers[base+1]
-        assert isinstance(w_end, W_Num)
+        w_idx = self.registers[base]
+        assert isinstance(w_idx, W_Num)
+        w_stop = self.registers[base+1]
+        assert isinstance(w_stop, W_Num)
         w_step = self.registers[base+2]
         assert isinstance(w_step, W_Num)
-        w_curr.n_val += w_step.n_val
-        if w_curr.n_val <= w_end.n_val:
+        w_idx.n_val += w_step.n_val
+        if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return args[1] - 32768 + 1
         else:
             return 1
-
 
     def IFORL(self, args): raise NotImplementedError('IFORL not implemented') 
 
