@@ -14,7 +14,7 @@ class TestWhile(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 10
+        assert ret.getval() == 10
 
     def test_simple_while_false(self):
         ret = codetest("""
@@ -24,7 +24,7 @@ class TestWhile(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 99
+        assert ret.getval() == 99
 
     def test_complex_while(self):
         ret = codetest("""
@@ -41,4 +41,4 @@ class TestWhile(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 60
+        assert ret.getval() == 60

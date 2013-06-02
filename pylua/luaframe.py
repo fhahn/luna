@@ -1,41 +1,41 @@
 from pylua.opcodes import unrolled_op_desc
 from pylua.objspace import ObjectSpace
-from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func, W_Pri
+from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func, W_Pri, W_Object
 
 
-
-class SReturnValue(object):
-    """Signals a 'return' statement.
-    Argument is the wrapped object to return."""
-    _immutable_ = True
-
-    def __init__(self, returnvalue):
-        self.returnvalue = returnvalue
-
-
-class LuaFrame(object):
+class LuaFrame(W_Object):
     def __init__(self, flags, constants, instructions):
         self.flags = flags
         self.constants = constants
         self.num_constants = len(constants)
         self.instructions = instructions
         self.num_instructions = len(instructions)
-        # TODO check bounds
-        self.space = ObjectSpace()
-
-        self.registers = [W_Object()] * 10
         self.cmp_result = False
+        self.registers = [W_Object()] * 10
+
+    def getval(self):
+        return self
 
 
 class LuaBuiltinFrame(LuaFrame):
     def __init__(self, function):
         self.function = function
 
-    def call1(self, arg):
-        self.function(arg)
+    def call0(self, space):
+        # print specific
+        return self.function(W_Str(''))
+
+    def call1(self, arg, space):
+        return self.function(arg)
 
 
 class LuaBytecodeFrame(LuaFrame):
+    def call0(self, space):
+        return self.execute_frame(space)
+
+    def call1(self, arg, space):
+        self.registers[0] = arg
+        return self.execute_frame(space)
 
     def execute_frame(self, space):
         next_instr = 0
@@ -46,10 +46,9 @@ class LuaBytecodeFrame(LuaFrame):
             for op_desc in unrolled_op_desc:
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
-                    res = meth(i_args)
+                    res = meth(i_args, space)
                     if op_desc.name in ('RET0', 'RET1', 'RET'):
-                        ret_val = SReturnValue(res)
-                        return ret_val
+                        return res
                     # TODO: return -1 everywhere
                     if res is None or res == -1:
                         next_instr += 1
@@ -66,12 +65,18 @@ class LuaBytecodeFrame(LuaFrame):
         assert isinstance(w_v, W_Str)
         return w_v
 
+    def get_func_constant(self, val):
+        w_v = self.constants[self.num_constants-val-1]
+        assert isinstance(w_v, LuaFrame)
+        return w_v
+
+
     def get_num_constant(self, val):
         w_v = self.constants[val]
         assert isinstance(w_v, W_Num)
         return w_v.getval()
 
-    def ISLT(self, args):
+    def ISLT(self, args, space):
         """
         A: var, D: var
         A < D
@@ -80,7 +85,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.lt(w_y)
 
-    def ISGE(self, args):
+    def ISGE(self, args, space):
         """
         A: var, D: var
         A >= D
@@ -89,7 +94,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.ge(w_y)
 
-    def ISLE(self, args):
+    def ISLE(self, args, space):
         """
         A: var, D: var
         A <= D
@@ -98,7 +103,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.le(w_y)
 
-    def ISGT(self, args):
+    def ISGT(self, args, space):
         """
         A: var, D: var
         A > D
@@ -107,7 +112,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.gt(w_y)
  
-    def ISEQV(self, args):
+    def ISEQV(self, args, space):
         """
         A: var, D: var
         A == D
@@ -116,7 +121,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.eq(w_y)
 
-    def ISNEV(self, args):
+    def ISNEV(self, args, space):
         """
         A: var, D: var
         A != D
@@ -125,7 +130,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.neq(w_y)
 
-    def ISEQS(self, args):
+    def ISEQS(self, args, space):
         """
         A: var, D: str
         A == D
@@ -134,7 +139,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_str = self.get_str_constant(args[1])
         self.cmp_result = w_var.eq(w_str) 
 
-    def ISNES(self, args):
+    def ISNES(self, args, space):
         """
         A: var, D: str
         A != D
@@ -143,7 +148,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_str = self.get_str_constant(args[1])
         self.cmp_result = w_var.neq(w_str) 
 
-    def ISEQN(self, args):
+    def ISEQN(self, args, space):
         """
         A: var, D: num
         """
@@ -151,7 +156,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_num = self.constants[args[1]]
         self.cmp_result = w_var.eq(w_num) 
 
-    def ISNEN(self, args):
+    def ISNEN(self, args, space):
         """
         A: var, D: num
         """
@@ -159,7 +164,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_num = self.constants[args[1]]
         self.cmp_result = w_var.neq(w_num)
 
-    def ISEQP(self, args):
+    def ISEQP(self, args, space):
         """
         A: var, D: pri
         A == D
@@ -168,7 +173,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_pri = W_Pri(args[1])
         self.cmp_result = w_var.eq(w_pri)
 
-    def ISNEP(self, args):
+    def ISNEP(self, args, space):
         """
         A: var, D: pri
         A != D
@@ -177,23 +182,23 @@ class LuaBytecodeFrame(LuaFrame):
         w_pri = W_Pri(args[1])
         self.cmp_result = w_var.neq(w_pri)
 
-    def ISTC(self, args): raise NotImplementedError('ISTC not implemented') 
+    def ISTC(self, args, space): raise NotImplementedError('ISTC not implemented') 
 
-    def ISFC(self, args): raise NotImplementedError('ISFC not implemented') 
+    def ISFC(self, args, space): raise NotImplementedError('ISFC not implemented') 
 
-    def IST(self, args): raise NotImplementedError('IST not implemented') 
+    def IST(self, args, space): raise NotImplementedError('IST not implemented') 
 
-    def ISF(self, args): raise NotImplementedError('ISF not implemented') 
+    def ISF(self, args, space): raise NotImplementedError('ISF not implemented') 
 
-    def MOV(self, args): raise NotImplementedError('MOV not implemented') 
+    def MOV(self, args, space): raise NotImplementedError('MOV not implemented') 
 
-    def NOT(self, args): raise NotImplementedError('NOT not implemented') 
+    def NOT(self, args, space): raise NotImplementedError('NOT not implemented') 
 
-    def UNM(self, args): raise NotImplementedError('UNM not implemented') 
+    def UNM(self, args, space): raise NotImplementedError('UNM not implemented') 
 
-    def LEN(self, args): raise NotImplementedError('LEN not implemented') 
+    def LEN(self, args, space): raise NotImplementedError('LEN not implemented') 
 
-    def ADDVN(self, args):
+    def ADDVN(self, args, space):
         """
         A: dst, B: var, C: num
         """
@@ -204,7 +209,7 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 + v2)
 
-    def SUBVN(self, args):
+    def SUBVN(self, args, space):
         """
         A: dst, B: var, C: num
         A = B + C
@@ -216,23 +221,23 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 - v2)
 
-    def MULVN(self, args): raise NotImplementedError('MULVN not implemented') 
+    def MULVN(self, args, space): raise NotImplementedError('MULVN not implemented') 
 
-    def DIVVN(self, args): raise NotImplementedError('DIVVN not implemented') 
+    def DIVVN(self, args, space): raise NotImplementedError('DIVVN not implemented') 
 
-    def MODVN(self, args): raise NotImplementedError('MODVN not implemented') 
+    def MODVN(self, args, space): raise NotImplementedError('MODVN not implemented') 
 
-    def ADDNV(self, args): raise NotImplementedError('ADDNV not implemented') 
+    def ADDNV(self, args, space): raise NotImplementedError('ADDNV not implemented') 
 
-    def SUBNV(self, args): raise NotImplementedError('SUBNV not implemented') 
+    def SUBNV(self, args, space): raise NotImplementedError('SUBNV not implemented') 
 
-    def MULNV(self, args): raise NotImplementedError('MULNV not implemented') 
+    def MULNV(self, args, space): raise NotImplementedError('MULNV not implemented') 
 
-    def DIVNV(self, args): raise NotImplementedError('DIVNV not implemented') 
+    def DIVNV(self, args, space): raise NotImplementedError('DIVNV not implemented') 
 
-    def MODNV(self, args): raise NotImplementedError('MODNV not implemented') 
+    def MODNV(self, args, space): raise NotImplementedError('MODNV not implemented') 
 
-    def ADDVV(self, args):
+    def ADDVV(self, args, space):
         """
         A: dst, B: var, C: var
         Sets A to B + C
@@ -246,19 +251,19 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print("ADDVV: Reg %d = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 + v2)
 
-    def SUBVV(self, args): raise NotImplementedError('SUBVV not implemented') 
+    def SUBVV(self, args, space): raise NotImplementedError('SUBVV not implemented') 
 
-    def MULVV(self, args): raise NotImplementedError('MULVV not implemented') 
+    def MULVV(self, args, space): raise NotImplementedError('MULVV not implemented') 
 
-    def DIVVV(self, args): raise NotImplementedError('DIVVV not implemented') 
+    def DIVVV(self, args, space): raise NotImplementedError('DIVVV not implemented') 
 
-    def MODVV(self, args): raise NotImplementedError('MODVV not implemented') 
+    def MODVV(self, args, space): raise NotImplementedError('MODVV not implemented') 
 
-    def POW(self, args): raise NotImplementedError('POW not implemented') 
+    def POW(self, args, space): raise NotImplementedError('POW not implemented') 
 
-    def CAT(self, args): raise NotImplementedError('CAT not implemented') 
+    def CAT(self, args, space): raise NotImplementedError('CAT not implemented') 
 
-    def KSTR(self, args):
+    def KSTR(self, args, space):
         """
         A: dst, D: str
         Set register A to str
@@ -266,9 +271,9 @@ class LuaBytecodeFrame(LuaFrame):
         w_str = self.get_str_constant(args[1])
         self.registers[args[0]] = w_str
 
-    def KCDATA(self, args): raise NotImplementedError('KCDATA not implemented') 
+    def KCDATA(self, args, space): raise NotImplementedError('KCDATA not implemented') 
 
-    def KSHORT(self, args): 
+    def KSHORT(self, args, space): 
         """
         A: dst, D: lits
         Set A to 16 bit signed integer D
@@ -277,7 +282,7 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print("KSHORT: set R %d to %d" %(args[0], val))
         self.registers[args[0]] = W_Num(val)
 
-    def KNUM(self, args):
+    def KNUM(self, args, space):
         """
         A: dst, D: num
         Set A to number constant D
@@ -285,43 +290,48 @@ class LuaBytecodeFrame(LuaFrame):
         val = self.get_num_constant(args[1])
         self.registers[args[0]] = W_Num(val)
 
-    def KPRI(self, args):
+    def KPRI(self, args, space):
         """
         A: dst, D pri
         sets dst register to pri
         """
         self.registers[args[0]] = W_Pri(args[1])
 
-    def KNIL(self, args): raise NotImplementedError('KNIL not implemented') 
+    def KNIL(self, args, space): raise NotImplementedError('KNIL not implemented') 
 
-    def UGET(self, args): raise NotImplementedError('UGET not implemented') 
+    def UGET(self, args, space): raise NotImplementedError('UGET not implemented') 
 
-    def USETV(self, args): raise NotImplementedError('USETV not implemented') 
+    def USETV(self, args, space): raise NotImplementedError('USETV not implemented') 
 
-    def USETS(self, args): raise NotImplementedError('USETS not implemented') 
+    def USETS(self, args, space): raise NotImplementedError('USETS not implemented') 
 
-    def USETN(self, args): raise NotImplementedError('USETN not implemented') 
+    def USETN(self, args, space): raise NotImplementedError('USETN not implemented') 
 
-    def USETP(self, args): raise NotImplementedError('USETP not implemented') 
+    def USETP(self, args, space): raise NotImplementedError('USETP not implemented') 
 
-    def UCLO(self, args): raise NotImplementedError('UCLO not implemented') 
+    def UCLO(self, args, space): 
+        if args[0] != 0:
+            raise NotImplementedError('Nonzero rbase not implemented') 
+        else:
+            return args[1] - 32768 + 1
 
-    def FNEW(self, args): raise NotImplementedError('FNEW not implemented') 
+    def FNEW(self, args, space):
+        self.registers[args[0]]= self.get_func_constant(args[1])
 
-    def TNEW(self, args): raise NotImplementedError('TNEW not implemented') 
+    def TNEW(self, args, space): raise NotImplementedError('TNEW not implemented') 
 
-    def TDUP(self, args): raise NotImplementedError('TDUP not implemented') 
+    def TDUP(self, args, space): raise NotImplementedError('TDUP not implemented') 
 
-    def GGET(self, args):
+    def GGET(self, args, space):
        """
        A: dst, D: str
        get global
        """
        key = self.get_str_constant(args[1]).getval()
        debug_print("GGET: get %s in R %s" % (key, args[0]))
-       self.registers[args[0]] = self.space.globals[key]
+       self.registers[args[0]] = space.globals[key]
 
-    def GSET(self, args):
+    def GSET(self, args, space):
         """
         A: dst, D: str
         Set Global
@@ -331,53 +341,64 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print('GSET: set global %s to %s' %(key, val))
         self.space.globals[key] = val
 
-    def TGETV(self, args): raise NotImplementedError('TGETV not implemented') 
+    def TGETV(self, args, space): raise NotImplementedError('TGETV not implemented') 
 
-    def TGETS(self, args): raise NotImplementedError('TGETS not implemented') 
+    def TGETS(self, args, space): raise NotImplementedError('TGETS not implemented') 
 
-    def TGETB(self, args): raise NotImplementedError('TGETB not implemented') 
+    def TGETB(self, args, space): raise NotImplementedError('TGETB not implemented') 
 
-    def TSETV(self, args): raise NotImplementedError('TSETV not implemented') 
+    def TSETV(self, args, space): raise NotImplementedError('TSETV not implemented') 
 
-    def TSETS(self, args): raise NotImplementedError('TSETS not implemented') 
+    def TSETS(self, args, space): raise NotImplementedError('TSETS not implemented') 
 
-    def TSETB(self, args): raise NotImplementedError('TSETB not implemented') 
+    def TSETB(self, args, space): raise NotImplementedError('TSETB not implemented') 
 
-    def TSETM(self, args): raise NotImplementedError('TSETM not implemented') 
+    def TSETM(self, args, space): raise NotImplementedError('TSETM not implemented') 
 
-    def CALLM(self, args): raise NotImplementedError('CALLM not implemented') 
+    def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 
 
-    def CALL(self, args):
+    def CALL(self, args, space):
         w_func = self.registers[args[0]]
-        assert isinstance(w_func, W_Func)
+        assert isinstance(w_func, LuaFrame)
         func = w_func.getval()
-        func.call1(self.registers[args[0]+1])
 
-    def CALLMT(self, args): raise NotImplementedError('CALLMT not implemented') 
+        if args[2] == 1: # 0 arguments
+            w_res = func.call0(space)
+        elif args[2] == 2: # 1 argument
+            w_res = func.call1(self.registers[args[0]+1], space)
+        else:
+            w_res = W_Object()
 
-    def CALLT(self, args): raise NotImplementedError('CALLT not implemented') 
+        if args[1] == 1: #no return values
+            pass
+        elif args[1] == 2: # 1 return values
+            self.registers[args[0]] = w_res
 
-    def ITERC(self, args): raise NotImplementedError('ITERC not implemented') 
+    def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
 
-    def ITERN(self, args): raise NotImplementedError('ITERN not implemented') 
+    def CALLT(self, args, space): raise NotImplementedError('CALLT not implemented') 
 
-    def VARG(self, args): raise NotImplementedError('VARG not implemented') 
+    def ITERC(self, args, space): raise NotImplementedError('ITERC not implemented') 
 
-    def ISNEXT(self, args): raise NotImplementedError('ISNEXT not implemented') 
+    def ITERN(self, args, space): raise NotImplementedError('ITERN not implemented') 
 
-    def RETM(self, args): raise NotImplementedError('RETM not implemented') 
+    def VARG(self, args, space): raise NotImplementedError('VARG not implemented') 
 
-    def RET(self, args): raise NotImplementedError('RET not implemented') 
+    def ISNEXT(self, args, space): raise NotImplementedError('ISNEXT not implemented') 
 
-    def RET0(self, args): 
+    def RETM(self, args, space): raise NotImplementedError('RETM not implemented') 
+
+    def RET(self, args, space): raise NotImplementedError('RET not implemented') 
+
+    def RET0(self, args, space): 
         """
         A: rbase, D: lit
         Return without value
         """
         debug_print("RET0 called")
-        return 0
+        return W_Num(0)
 
-    def RET1(self, args):
+    def RET1(self, args, space):
         """
         A: rbase, D: lit
         Return with exactly one value, R(A) holds the value
@@ -385,10 +406,8 @@ class LuaBytecodeFrame(LuaFrame):
         # TODO only numbers at the moment
  
         w_v = self.registers[args[0]]
-        assert isinstance(w_v, W_Num)
-        retval = w_v.getval()
-        debug_print('RET1: return %s' % retval)
-        return retval
+        debug_print('RET1: return %s' % w_v.to_str())
+        return w_v
 
     def continue_for_loop(self, idx, stop, step):
         if step >= 0:
@@ -396,7 +415,7 @@ class LuaBytecodeFrame(LuaFrame):
         else:
             return idx >= stop
 
-    def FORI(self, args):
+    def FORI(self, args, space):
         #TODO combine FORI and FORL?
         base = args[0]
         w_idx = self.registers[base]
@@ -410,9 +429,9 @@ class LuaBytecodeFrame(LuaFrame):
         else:
             return args[1] - 32768 + 1
 
-    def JFORI(self, args): raise NotImplementedError('JFORI not implemented') 
+    def JFORI(self, args, space): raise NotImplementedError('JFORI not implemented') 
 
-    def FORL(self, args):
+    def FORL(self, args, space):
         base = args[0]
         w_idx = self.registers[base]
         assert isinstance(w_idx, W_Num)
@@ -426,50 +445,49 @@ class LuaBytecodeFrame(LuaFrame):
         else:
             return 1
 
-    def IFORL(self, args): raise NotImplementedError('IFORL not implemented') 
+    def IFORL(self, args, space): raise NotImplementedError('IFORL not implemented') 
 
-    def JFORL(self, args): raise NotImplementedError('JFORL not implemented') 
+    def JFORL(self, args, space): raise NotImplementedError('JFORL not implemented') 
 
-    def ITERL(self, args): raise NotImplementedError('ITERL not implemented') 
+    def ITERL(self, args, space): raise NotImplementedError('ITERL not implemented') 
 
-    def IITERL(self, args): raise NotImplementedError('IITERL not implemented') 
+    def IITERL(self, args, space): raise NotImplementedError('IITERL not implemented') 
 
-    def JITERL(self, args): raise NotImplementedError('JITERL not implemented') 
+    def JITERL(self, args, space): raise NotImplementedError('JITERL not implemented') 
 
-    def LOOP(self, args): 
+    def LOOP(self, args, space): 
         """
         No Op, but can be used as loop hint for the jit in future
         """
         pass
 
-    def ILOOP(self, args): raise NotImplementedError('ILOOP not implemented') 
+    def ILOOP(self, args, space): raise NotImplementedError('ILOOP not implemented') 
 
-    def JLOOP(self, args): raise NotImplementedError('JLOOP not implemented') 
+    def JLOOP(self, args, space): raise NotImplementedError('JLOOP not implemented') 
 
-    def JMP(self, args): 
+    def JMP(self, args, space): 
         """
         A: Rbase, D: jmp (next instr)
         """
         if self.cmp_result:
-            # TODO find out about the offset
             return args[1] - 32768 + 1
         else:
             # rpython does not like returning None here
             self.cmp_result = True
             return -1
 
-    def FUNCF(self, args): raise NotImplementedError('FUNCF not implemented') 
+    def FUNCF(self, args, space): raise NotImplementedError('FUNCF not implemented') 
 
-    def IFUNCF(self, args): raise NotImplementedError('IFUNCF not implemented') 
+    def IFUNCF(self, args, space): raise NotImplementedError('IFUNCF not implemented') 
 
-    def JFUNCF(self, args): raise NotImplementedError('JFUNCF not implemented') 
+    def JFUNCF(self, args, space): raise NotImplementedError('JFUNCF not implemented') 
 
-    def FUNCV(self, args): raise NotImplementedError('FUNCV not implemented') 
+    def FUNCV(self, args, space): raise NotImplementedError('FUNCV not implemented') 
 
-    def IFUNCV(self, args): raise NotImplementedError('IFUNCV not implemented') 
+    def IFUNCV(self, args, space): raise NotImplementedError('IFUNCV not implemented') 
 
-    def JFUNCV(self, args): raise NotImplementedError('JFUNCV not implemented') 
+    def JFUNCV(self, args, space): raise NotImplementedError('JFUNCV not implemented') 
 
-    def FUNCC(self, args): raise NotImplementedError('FUNCC not implemented') 
+    def FUNCC(self, args, space): raise NotImplementedError('FUNCC not implemented') 
 
-    def FUNCCW(self, args): raise NotImplementedError('FUNCCW not implemented') 
+    def FUNCCW(self, args, space): raise NotImplementedError('FUNCCW not implemented') 

@@ -21,8 +21,8 @@ from pylua.helpers import debug_print, W_Str, W_Num
 
 
 
-#KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]
-#UNROLLED_KGC_TYPES = unrolling_iterable(KGC_TYPES)
+KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]
+UNROLLED_KGC_TYPES = unrolling_iterable(KGC_TYPES)
 
 """
 def decode_arg(self, type, val):
@@ -97,17 +97,17 @@ class Parser(object):
         flags = self.uleb()
 
         # proto+    
-        frames = []
+        self.frames = []
         while True:
             l = self.uleb()
-            frames.append(self.parse_frame())
+            self.frames.append(self.parse_frame())
             # peek at next byte only, do not consume
             if self.peek() == 0:
                 break
         # 0U and EOF
         if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
         if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
-        return (flags, frames)
+        return (flags, self.frames[-1])
 
     def parse_frame(self):
         flags = self.byte()
@@ -131,16 +131,22 @@ class Parser(object):
 
         constants = [None] * (num_kgc+num_kn)
 
+        childc = len(self.frames)
         #TODO imlement constant parsing
         for i in xrange(0, num_kgc):
             u = self.uleb()
+            
+            # CHILD 
+            if u == 0:
+                childc -= 1
+                constants[num_kn+i] = self.frames[childc]
+            else: # string and all other things
+                constants[num_kn+i] = self.const_str(u)
             """
-            kgc_type = KGC_TYPES[u]
             for t in UNROLLED_KGC_TYPES:
                 if t == kgc_type:
                     meth = getattr(self, t)
             """
-            constants[num_kn+i] = self.const_str(u)
 
         for i in xrange(0, num_kn):
             debug_print("read knum")

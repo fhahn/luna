@@ -13,7 +13,7 @@ class TestInterpreter(object):
                 z = x + y
                 return x + y +z
                 """)
-        assert ret.returnvalue == 26
+        assert ret.getval() == 26
 
     def test_long_add(self):
         """
@@ -26,7 +26,7 @@ class TestInterpreter(object):
                 z = x + y
                 return z
                 """)
-        assert ret.returnvalue == 262144
+        assert ret.getval() == 262144
 
     def test_add_constant_to_var(self):
         """
@@ -37,7 +37,7 @@ class TestInterpreter(object):
                 x = 131072
                 return x+10
                 """)
-        assert ret.returnvalue == 131082
+        assert ret.getval() == 131082
 
     def test_float_add(self):
         ret = codetest("""
@@ -45,11 +45,11 @@ class TestInterpreter(object):
                 y = 1.2
                 return x + y
                 """)
-        assert ret.returnvalue == 7.7
+        assert ret.getval() == 7.7
 
     def test_subvn(self):
         ret = codetest("""
                 x = 6500
                 return x - 3000
                 """)
-        assert ret.returnvalue == 3500
+        assert ret.getval() == 3500

@@ -13,7 +13,7 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 10
+        assert ret.getval() == 10
 
     def test_simple_fori_loop_false(self):
         ret = codetest("""
@@ -23,7 +23,7 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 0
+        assert ret.getval() == 0
 
     def test_simple_fori_loop_step_2(self):
         ret = codetest("""
@@ -33,7 +33,7 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 5
+        assert ret.getval() == 5
 
     def test_nested_fori_loop(self):
         ret = codetest("""
@@ -46,7 +46,7 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 110
+        assert ret.getval() == 110
 
     def test_backwards_fori_loop(self):
         ret = codetest("""
@@ -56,7 +56,7 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 10
+        assert ret.getval() == 10
 
     def test_nested_backwards_fori_loop(self):
         ret = codetest("""
@@ -69,4 +69,4 @@ class TestFor(object):
                 end
                 return x
                 """)
-        assert ret.returnvalue == 110
+        assert ret.getval() == 110

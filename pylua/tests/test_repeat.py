@@ -14,7 +14,7 @@ class TestRepeat(object):
                 until x == 10
                 return x
                 """)
-        assert ret.returnvalue == 10
+        assert ret.getval() == 10
 
     def test_simple_repeat_false(self):
         ret = codetest("""
@@ -24,7 +24,7 @@ class TestRepeat(object):
                 until x > 0
                 return x
                 """)
-        assert ret.returnvalue == 100
+        assert ret.getval() == 100
 
     def test_nested_repeat(self):
         ret = codetest("""
@@ -41,4 +41,4 @@ class TestRepeat(object):
                 until i == 10
                 return x
                 """)
-        assert ret.returnvalue == 60
+        assert ret.getval() == 60

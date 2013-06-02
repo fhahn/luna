@@ -43,8 +43,7 @@ class TestParser:
         """
         f = luabytecode_file("x = 1")
         p = Parser(f.name)
-        flags, protos = p.parse()
-        proto = protos[0]
+        flags, proto = p.parse()
 
         assert proto.constants[0].s_val == 'x'
         assert proto.instructions == [

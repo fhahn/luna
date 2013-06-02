@@ -14,7 +14,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isnen_true_with_eq(self):
         ret = codetest("""
@@ -24,7 +24,7 @@ class TestIf(object):
                 end
                 return 9;
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_iseqn_false_with_neq(self):
         ret = codetest("""
@@ -34,7 +34,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_iseqn_true_with_neq(self):
         ret = codetest("""
@@ -44,7 +44,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_iseqp_true_with_neq(self):
         ret = codetest("""
@@ -54,7 +54,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_iseqp_false_with_neq(self):
         ret = codetest("""
@@ -64,7 +64,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isneqp_true_with_eq(self):
         ret = codetest("""
@@ -74,7 +74,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isneqp_false_with_eq(self):
         ret = codetest("""
@@ -84,7 +84,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_iseqs_true_with_neq(self):
         ret = codetest("""
@@ -94,7 +94,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_iseqs_false_with_neq(self):
         ret = codetest("""
@@ -104,7 +104,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isneqs_true_with_eq(self):
         ret = codetest("""
@@ -114,7 +114,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isneqs_false_with_eq(self):
         ret = codetest("""
@@ -124,7 +124,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_iseqv_true_with_neq(self):
         ret = codetest("""
@@ -135,7 +135,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_iseqv_false_with_neq(self):
         ret = codetest("""
@@ -146,7 +146,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isneqv_true_with_eq(self):
         ret = codetest("""
@@ -157,7 +157,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isneqv_false_with_eq(self):
         ret = codetest("""
@@ -168,7 +168,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isgt_true_with_str(self):
         ret = codetest("""
@@ -179,7 +179,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isgt_false_with_str(self):
         ret = codetest("""
@@ -190,7 +190,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isgt_true_with_num(self):
         ret = codetest("""
@@ -201,7 +201,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isgt_false_with_num(self):
         ret = codetest("""
@@ -212,7 +212,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isle_true_with_str(self):
         ret = codetest("""
@@ -223,7 +223,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isle_false_with_str(self):
         ret = codetest("""
@@ -234,7 +234,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isle_true_with_num(self):
         ret = codetest("""
@@ -245,7 +245,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isle_false_with_num(self):
         ret = codetest("""
@@ -256,7 +256,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isge_true_with_str(self):
         ret = codetest("""
@@ -267,7 +267,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isge_false_with_str(self):
         ret = codetest("""
@@ -278,7 +278,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_isge_true_with_num(self):
         ret = codetest("""
@@ -289,7 +289,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_isge_false_with_num(self):
         ret = codetest("""
@@ -300,7 +300,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_islt_true_with_str(self):
         ret = codetest("""
@@ -311,7 +311,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_islt_false_with_str(self):
         ret = codetest("""
@@ -322,7 +322,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_islt_true_with_num(self):
         ret = codetest("""
@@ -333,7 +333,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_islt_false_with_num(self):
         ret = codetest("""
@@ -344,7 +344,7 @@ class TestIf(object):
                 end
                 return 9
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9
 
     def test_if_else1(self):
         ret = codetest("""
@@ -357,7 +357,7 @@ class TestIf(object):
                 end
                 return -1
                 """)
-        assert ret.returnvalue == 2
+        assert ret.getval() == 2
 
     def test_if_else1(self):
         ret = codetest("""
@@ -370,4 +370,4 @@ class TestIf(object):
                 end
                 return -1
                 """)
-        assert ret.returnvalue == 9
+        assert ret.getval() == 9

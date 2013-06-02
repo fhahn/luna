@@ -141,7 +141,7 @@ def_op('TSETM', 60, ARGS_AD)
 
 def_op('CALLM', 61, ARGS_AD)
 
-def_op('CALL', 62, ARGS_AD)
+def_op('CALL', 62, ARGS_ABC)
 
 def_op('CALLMT', 63, ARGS_AD)
 
