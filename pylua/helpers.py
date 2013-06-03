@@ -35,6 +35,9 @@ class W_Object(object):
     def to_str(self):
         raise NotImplementedError('to_str not supported by this class')
 
+    def clone(self):
+        raise NotImplementedError('to_str not supported by this class')
+
 
 class W_Num(W_Object):
     def __init__(self, val):
@@ -69,6 +72,9 @@ class W_Num(W_Object):
 
     def to_str(self):
         return str(self.n_val)
+
+    def clone(self):
+        return W_Num(self.n_val)
 
 
 class W_Str(W_Object):
@@ -105,6 +111,8 @@ class W_Str(W_Object):
     def to_str(self):
         return str(self.s_val)
 
+    def clone(self):
+        return W_Str(self.s_val)
 
 
 class W_Func(W_Object):
@@ -114,6 +122,10 @@ class W_Func(W_Object):
 
     def getval(self):
         return self.f_val
+
+    def clone(self):
+        return W_Func(self.f_val)
+
 
 class W_Pri(W_Num):
     def __init__(self, val):
