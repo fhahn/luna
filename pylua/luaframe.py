@@ -76,6 +76,12 @@ class LuaBytecodeFrame(LuaFrame):
         assert isinstance(w_v, W_Num)
         return w_v.getval()
 
+    def get_num_register(self, pos):
+        w_v = self.registers[pos]
+        assert isinstance(w_v, W_Num)
+        return w_v.getval()
+ 
+
     def ISLT(self, args, space):
         """
         A: var, D: var
@@ -202,9 +208,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         A: dst, B: var, C: num
         """
-        w_v1 = self.registers[args[1]]
-        assert isinstance(w_v1, W_Num)
-        v1 = w_v1.getval()
+        v1 = self.get_num_register(args[1])
         v2 = self.get_num_constant(args[2])
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 + v2)
@@ -214,26 +218,41 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, B: var, C: num
         A = B + C
         """
-        w_v1 = self.registers[args[1]]
-        assert isinstance(w_v1, W_Num)
-        v1 = w_v1.getval()
+        v1 = self.get_num_register(args[1])
         v2 = self.get_num_constant(args[2])
-        debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 - v2)
 
-    def MULVN(self, args, space): raise NotImplementedError('MULVN not implemented') 
+    def MULVN(self, args, space):
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_constant(args[2])
+        self.registers[args[0]] = W_Num(v1*v2)
 
-    def DIVVN(self, args, space): raise NotImplementedError('DIVVN not implemented') 
+    def DIVVN(self, args, space):
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_constant(args[2])
+        self.registers[args[0]] = W_Num(v1/float(v2))
 
     def MODVN(self, args, space): raise NotImplementedError('MODVN not implemented') 
 
-    def ADDNV(self, args, space): raise NotImplementedError('ADDNV not implemented') 
+    def ADDNV(self, args, space):
+        v1 = self.get_num_constant(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v1+v2)
 
-    def SUBNV(self, args, space): raise NotImplementedError('SUBNV not implemented') 
+    def SUBNV(self, args, space):
+        v1 = self.get_num_constant(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v1-v2)
 
-    def MULNV(self, args, space): raise NotImplementedError('MULNV not implemented') 
+    def MULNV(self, args, space):
+        v1 = self.get_num_constant(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v1*v2)
 
-    def DIVNV(self, args, space): raise NotImplementedError('DIVNV not implemented') 
+    def DIVNV(self, args, space):
+        v1 = self.get_num_constant(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v1/float(v2))
 
     def MODNV(self, args, space): raise NotImplementedError('MODNV not implemented') 
 
@@ -242,20 +261,26 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, B: var, C: var
         Sets A to B + C
         """
-        w_v1 = self.registers[args[1]]
-        assert isinstance(w_v1, W_Num)
-        w_v2 = self.registers[args[2]]
-        assert isinstance(w_v2, W_Num)
-        v1 = w_v1.getval()
-        v2 = w_v2.getval()
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_register(args[2])
         debug_print("ADDVV: Reg %d = %s + %s" % (args[0], v1, v2))
         self.registers[args[0]] = W_Num(v1 + v2)
 
-    def SUBVV(self, args, space): raise NotImplementedError('SUBVV not implemented') 
+    def SUBVV(self, args, space):
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_register(args[2])
+        debug_print("ADDVV: Reg %d = %s + %s" % (args[0], v1, v2))
+        self.registers[args[0]] = W_Num(v2-v1)
 
-    def MULVV(self, args, space): raise NotImplementedError('MULVV not implemented') 
+    def MULVV(self, args, space):
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v1*v2)
 
-    def DIVVV(self, args, space): raise NotImplementedError('DIVVV not implemented') 
+    def DIVVV(self, args, space):
+        v1 = self.get_num_register(args[1])
+        v2 = self.get_num_register(args[2])
+        self.registers[args[0]] = W_Num(v2/float(v1))
 
     def MODVV(self, args, space): raise NotImplementedError('MODVV not implemented') 
 
