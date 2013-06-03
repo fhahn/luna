@@ -28,14 +28,21 @@ class LuaBuiltinFrame(LuaFrame):
     def call1(self, arg, space):
         return self.function(arg)
 
+    def clone(self):
+        # no need to cleon, LuaBuilinFrame has no state
+        return self
+
 
 class LuaBytecodeFrame(LuaFrame):
     def call0(self, space):
         return self.execute_frame(space)
 
     def call1(self, arg, space):
-        self.registers[0] = arg
+        self.registers[0] = arg.clone()
         return self.execute_frame(space)
+
+    def clone(self):
+        return LuaBytecodeFrame(self.flags, self.constants, self.instructions)
 
     def execute_frame(self, space):
         next_instr = 0
@@ -80,7 +87,6 @@ class LuaBytecodeFrame(LuaFrame):
         w_v = self.registers[pos]
         assert isinstance(w_v, W_Num)
         return w_v.getval()
- 
 
     def ISLT(self, args, space):
         """
@@ -196,7 +202,8 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISF(self, args, space): raise NotImplementedError('ISF not implemented') 
 
-    def MOV(self, args, space): raise NotImplementedError('MOV not implemented') 
+    def MOV(self, args, space):
+        self.registers[args[0]] = self.registers[args[1]].clone()
 
     def NOT(self, args, space): raise NotImplementedError('NOT not implemented') 
 
@@ -270,7 +277,7 @@ class LuaBytecodeFrame(LuaFrame):
         v1 = self.get_num_register(args[1])
         v2 = self.get_num_register(args[2])
         debug_print("ADDVV: Reg %d = %s + %s" % (args[0], v1, v2))
-        self.registers[args[0]] = W_Num(v2-v1)
+        self.registers[args[0]] = W_Num(v1-v2)
 
     def MULVV(self, args, space):
         v1 = self.get_num_register(args[1])
@@ -280,7 +287,7 @@ class LuaBytecodeFrame(LuaFrame):
     def DIVVV(self, args, space):
         v1 = self.get_num_register(args[1])
         v2 = self.get_num_register(args[2])
-        self.registers[args[0]] = W_Num(v2/float(v1))
+        self.registers[args[0]] = W_Num(v1/float(v2))
 
     def MODVV(self, args, space): raise NotImplementedError('MODVV not implemented') 
 
@@ -385,7 +392,9 @@ class LuaBytecodeFrame(LuaFrame):
     def CALL(self, args, space):
         w_func = self.registers[args[0]]
         assert isinstance(w_func, LuaFrame)
-        func = w_func.getval()
+        # clone the frame, so every frame has it's own registers
+        # because a frame can be called multiple times (recursion)
+        func = w_func.getval().clone()
 
         if args[2] == 1: # 0 arguments
             w_res = func.call0(space)
@@ -429,7 +438,6 @@ class LuaBytecodeFrame(LuaFrame):
         Return with exactly one value, R(A) holds the value
         """
         # TODO only numbers at the moment
- 
         w_v = self.registers[args[0]]
         debug_print('RET1: return %s' % w_v.to_str())
         return w_v

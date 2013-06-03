@@ -23,3 +23,18 @@ class TestRepeat(object):
                 return x
                 """)
         assert ret.getval() == 11
+
+    def test_call_recursive(self):
+        ret = codetest("""
+                function fac(n)
+                    if n == 1 then
+                        return 1
+                    end
+                    x = n * fac(n-1);
+                    print(n)
+                    return x
+                end
+                x = fac(10)
+                return x
+                """)
+        assert ret.getval() == 3628800

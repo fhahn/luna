@@ -169,3 +169,19 @@ class TestCompiled(object):
         )
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "OK1\nOK2\nOK3\n"
+
+    def test_recursive_call(self):
+
+        f = test_file(src="""
+            function fac(n)
+                if n == 1 then
+                    return 1
+                end
+                return fac(n-1) * n
+            end
+            x = fac(10)
+            print(x)
+            """, suffix=".l"
+        )
+        out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
+        assert out == "3628800.000000\n"

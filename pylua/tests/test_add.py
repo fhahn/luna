@@ -37,7 +37,7 @@ class TestAddition(object):
 
     def test_addnv(self):
         ret = codetest("""
-                x = 131072
+                x = 131
                 return 10 + x
                 """)
-        assert ret.getval() == 131082
+        assert ret.getval() == 141

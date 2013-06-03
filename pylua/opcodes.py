@@ -59,37 +59,37 @@ def_op('LEN', 19, ARGS_AD)
 
 def_op('ADDVN', 20, ARGS_ABC)
 
-def_op('SUBVN', 21, ARGS_AD)
+def_op('SUBVN', 21, ARGS_ABC)
 
-def_op('MULVN', 22, ARGS_AD)
+def_op('MULVN', 22, ARGS_ABC)
 
-def_op('DIVVN', 23, ARGS_AD)
+def_op('DIVVN', 23, ARGS_ABC)
 
-def_op('MODVN', 24, ARGS_AD)
+def_op('MODVN', 24, ARGS_ABC)
 
-def_op('ADDNV', 25, ARGS_AD)
+def_op('ADDNV', 25, ARGS_ABC)
 
-def_op('SUBNV', 26, ARGS_AD)
+def_op('SUBNV', 26, ARGS_ABC)
 
-def_op('MULNV', 27, ARGS_AD)
+def_op('MULNV', 27, ARGS_ABC)
 
-def_op('DIVNV', 28, ARGS_AD)
+def_op('DIVNV', 28, ARGS_ABC)
 
-def_op('MODNV', 29, ARGS_AD)
+def_op('MODNV', 29, ARGS_ABC)
 
 def_op('ADDVV', 30, ARGS_ABC)
 
-def_op('SUBVV', 31, ARGS_AD)
+def_op('SUBVV', 31, ARGS_ABC)
 
-def_op('MULVV', 32, ARGS_AD)
+def_op('MULVV', 32, ARGS_ABC)
 
-def_op('DIVVV', 33, ARGS_AD)
+def_op('DIVVV', 33, ARGS_ABC)
 
-def_op('MODVV', 34, ARGS_AD)
+def_op('MODVV', 34, ARGS_ABC)
 
-def_op('POW', 35, ARGS_AD)
+def_op('POW', 35, ARGS_ABC)
 
-def_op('CAT', 36, ARGS_AD)
+def_op('CAT', 36, ARGS_ABC)
 
 def_op('KSTR', 37, ARGS_AD)
 
@@ -139,7 +139,7 @@ def_op('TSETB', 59, ARGS_AD)
 
 def_op('TSETM', 60, ARGS_AD)
 
-def_op('CALLM', 61, ARGS_AD)
+def_op('CALLM', 61, ARGS_ABC)
 
 def_op('CALL', 62, ARGS_ABC)
 
@@ -147,11 +147,11 @@ def_op('CALLMT', 63, ARGS_AD)
 
 def_op('CALLT', 64, ARGS_AD)
 
-def_op('ITERC', 65, ARGS_AD)
+def_op('ITERC', 65, ARGS_ABC)
 
-def_op('ITERN', 66, ARGS_AD)
+def_op('ITERN', 66, ARGS_ABC)
 
-def_op('VARG', 67, ARGS_AD)
+def_op('VARG', 67, ARGS_ABC)
 
 def_op('ISNEXT', 68, ARGS_AD)
 
