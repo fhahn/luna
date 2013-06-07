@@ -1,7 +1,6 @@
 from pylua.objspace import ObjectSpace
 from pylua.luaframe import LuaBuiltinFrame
 from pylua.helpers import debug_print
-from pylua.helpers import W_Func
 
 
 """

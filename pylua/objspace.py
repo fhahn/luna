@@ -1,4 +1,4 @@
-from pylua.helpers import W_Object
+from pylua.w_objects import W_Object
 
 class ObjectSpace(object):
     def __init__(self):

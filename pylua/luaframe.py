@@ -1,6 +1,7 @@
 from pylua.opcodes import unrolled_op_desc
 from pylua.objspace import ObjectSpace
-from pylua.helpers import debug_print, W_Str, W_Num, W_Object, W_Func, W_Pri, W_Object
+from pylua.helpers import debug_print
+from pylua.w_objects import W_Str, W_Num, W_Object, W_Func, W_Pri
 
 
 class LuaFrame(W_Object):

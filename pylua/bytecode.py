@@ -17,7 +17,8 @@ from rpython.rlib.unroll import unrolling_iterable
 
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
 from pylua.luaframe import LuaBytecodeFrame
-from pylua.helpers import debug_print, W_Str, W_Num
+from pylua.helpers import debug_print
+from pylua.w_objects import W_Str, W_Num
 
 
 
