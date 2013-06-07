@@ -1,7 +1,6 @@
 from pylua.opcodes import unrolled_op_desc
-from pylua.objspace import ObjectSpace
 from pylua.helpers import debug_print
-from pylua.w_objects import W_Str, W_Num, W_Object, W_Func, W_Pri
+from pylua.w_objects import W_Str, W_Num, W_Object, W_Pri
 
 
 class LuaFrame(W_Object):
@@ -63,7 +62,8 @@ class LuaBytecodeFrame(LuaFrame):
                     else:
                         next_instr += res
 
-            if next_instr >= self.num_instructions: break
+            if next_instr >= self.num_instructions:
+                break
 
     def decode_lits(self, val):
         return val - 0x10000 if (val & 0x8000) > 0 else val
@@ -77,7 +77,6 @@ class LuaBytecodeFrame(LuaFrame):
         w_v = self.constants[self.num_constants-val-1]
         assert isinstance(w_v, LuaFrame)
         return w_v
-
 
     def get_num_constant(self, val):
         w_v = self.constants[val]
@@ -124,7 +123,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_x = self.registers[args[0]]
         w_y = self.registers[args[1]]
         self.cmp_result = w_x.gt(w_y)
- 
+
     def ISEQV(self, args, space):
         """
         A: var, D: var
@@ -150,7 +149,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         w_var = self.registers[args[0]]
         w_str = self.get_str_constant(args[1])
-        self.cmp_result = w_var.eq(w_str) 
+        self.cmp_result = w_var.eq(w_str)
 
     def ISNES(self, args, space):
         """
@@ -159,7 +158,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         w_var = self.registers[args[0]]
         w_str = self.get_str_constant(args[1])
-        self.cmp_result = w_var.neq(w_str) 
+        self.cmp_result = w_var.neq(w_str)
 
     def ISEQN(self, args, space):
         """
@@ -167,7 +166,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         w_var = self.registers[args[0]]
         w_num = self.constants[args[1]]
-        self.cmp_result = w_var.eq(w_num) 
+        self.cmp_result = w_var.eq(w_num)
 
     def ISNEN(self, args, space):
         """
@@ -195,7 +194,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_pri = W_Pri(args[1])
         self.cmp_result = w_var.neq(w_pri)
 
-    def ISTC(self, args, space): raise NotImplementedError('ISTC not implemented') 
+    def ISTC(self, args, space): raise NotImplementedError('ISTC not implemented')
 
     def ISFC(self, args, space): raise NotImplementedError('ISFC not implemented') 
 

@@ -1,14 +1,13 @@
 """
-    useful links:
-        - http://wiki.luajit.org/Bytecode/c728f657001eaeee7f64eb99f47dc413c8e29a56
-        - http://wiki.luajit.org/Bytecode-2.0
-        - https://github.com/creationix/brozula/blob/master/parser.js
-        - http://lua-users.org/lists/lua-l/2012-12/msg00229.html
-        - http://luajit.org/running.html#opt_b
+useful links:
+    - http://wiki.luajit.org/Bytecode/c728f657001eaeee7f64eb99f47dc413c8e29a56
+    - http://wiki.luajit.org/Bytecode-2.0
+    - https://github.com/creationix/brozula/blob/master/parser.js
+    - http://lua-users.org/lists/lua-l/2012-12/msg00229.html
+    - http://luajit.org/running.html#opt_b
 
 """
 import os
-import struct
 
 from rpython.annotator.model import SomeByteArray
 from rpython.rlib.rstruct.runpack import runpack
@@ -19,7 +18,6 @@ from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
 from pylua.luaframe import LuaBytecodeFrame
 from pylua.helpers import debug_print
 from pylua.w_objects import W_Str, W_Num
-
 
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]
@@ -35,7 +33,7 @@ def decode_arg(self, type, val):
         if val == 0: return Arg(None)
         elif val == 1: return Arg(False)
         elif val == 2: return Arg(True)
-        else: assert 0 
+        else: assert 0
     elif type == 'num': return Arg(val) #return self.constants[val]
     elif type in ('str', 'tab', 'func', 'cdata'):
         return Arg(self.constants[self.num_consts-val-1])
@@ -44,6 +42,7 @@ def decode_arg(self, type, val):
     else:
      return Arg(val)
 """
+
 
 class Parser(object):
     def __init__(self,  filename):
@@ -85,19 +84,23 @@ class Parser(object):
         return result
 
     def parse(self):
-        # parses a luajit bytecode file 
+        # parses a luajit bytecode file
         # see http://wiki.luajit.org/Bytecode-2.0 for format information
 
         # header = ESC 'L' 'J' versionB flagsU [namelenU nameB*]
-        if self.byte() != 0x1b: raise ValueError("Expected ESC in first byte")
-        if self.byte() != 0x4c: raise ValueError("Expected L in second byte")
-        if self.byte() != 0x4a: raise ValueError("Expected J in third byte")
-        if self.byte() != 1: raise ValueError("Only version 1 supported")
+        if self.byte() != 0x1b:
+            raise ValueError("Expected ESC in first byte")
+        if self.byte() != 0x4c:
+            raise ValueError("Expected L in second byte")
+        if self.byte() != 0x4a:
+            raise ValueError("Expected J in third byte")
+        if self.byte() != 1:
+            raise ValueError("Only version 1 supported")
 
         # flags
         flags = self.uleb()
 
-        # proto+    
+        # proto+
         self.frames = []
         while True:
             l = self.uleb()
@@ -106,8 +109,10 @@ class Parser(object):
             if self.peek() == 0:
                 break
         # 0U and EOF
-        if self.uleb() != 0: raise ValueError("Missing 0U at end of file")
-        if self.pos < len(self.bytes): raise ValueError(" bytes leftover")
+        if self.uleb() != 0:
+            raise ValueError("Missing 0U at end of file")
+        if self.pos < len(self.bytes):
+            raise ValueError(" bytes leftover")
         return (flags, self.frames[-1])
 
     def parse_frame(self):
@@ -120,7 +125,7 @@ class Parser(object):
         num_bc = self.uleb()
 
         instructions = []
-        debug_print("found "+ str(num_bc) + " bc instructions")
+        debug_print("found "+str(num_bc)+" bc instructions")
         for i in xrange(0, num_bc):
             instructions.append(self.decode_opcode(self.word()))
 
@@ -136,12 +141,12 @@ class Parser(object):
         #TODO imlement constant parsing
         for i in xrange(0, num_kgc):
             u = self.uleb()
-            
-            # CHILD 
+
+            # CHILD
             if u == 0:
                 childc -= 1
                 constants[num_kn+i] = self.frames[childc]
-            else: # string and all other things
+            else:  # string and all other things
                 constants[num_kn+i] = self.const_str(u)
             """
             for t in UNROLLED_KGC_TYPES:
@@ -160,14 +165,14 @@ class Parser(object):
         return LuaBytecodeFrame(flags, constants, instructions)
 
     def const_str(self, l):
-        l -= 5 # Offset for STR enum
+        l -= 5  # Offset for STR enum
         assert l > 0
         v = self.bytes[self.pos:self.pos+l]
         self.pos += l
         return W_Str(v)
 
     def read_knum(self):
-        isnum = self.peek() & 1;
+        isnum = self.peek() & 1
         lo = self.uleb() >> 1
         if isnum == 1:
             """
@@ -188,7 +193,7 @@ class Parser(object):
         args = (0, 0, 0)
         a = (word >> 8) & 0xff
         if args_type == ARGS_AD:
-            args =  (a, word >> 16, 0)
+            args = (a, word >> 16, 0)
         elif args_type == ARGS_ABC:
             args = (a, word >> 24, (word >> 16) & 0xff)
         else:

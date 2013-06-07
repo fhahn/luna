@@ -3,10 +3,10 @@ from pylua.luaframe import LuaBuiltinFrame
 from pylua.helpers import debug_print
 
 
-"""
-prints arg to std out
-"""
 def m_print(arg):
+    """
+    prints arg to std out
+    """
     print(arg.to_str())
 
 
