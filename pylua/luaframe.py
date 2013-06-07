@@ -41,9 +41,6 @@ class LuaBytecodeFrame(LuaFrame):
         self.registers[0] = arg.clone()
         return self.execute_frame(space)
 
-    def clone(self):
-        return LuaBytecodeFrame(self.flags, self.constants, self.instructions)
-
     def execute_frame(self, space):
         next_instr = 0
         self.space = space
@@ -389,7 +386,9 @@ class LuaBytecodeFrame(LuaFrame):
         assert isinstance(w_func, LuaFrame)
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
-        func = w_func.getval().clone()
+        func = w_func.getval()
+        old_regs = func.registers
+        func.registers = list(old_regs)
 
         if args[2] == 1: # 0 arguments
             w_res = func.call0(space)
@@ -397,6 +396,8 @@ class LuaBytecodeFrame(LuaFrame):
             w_res = func.call1(self.registers[args[0]+1], space)
         else:
             w_res = W_Object()
+
+        func.registers = old_regs
 
         if args[1] == 1: #no return values
             pass
