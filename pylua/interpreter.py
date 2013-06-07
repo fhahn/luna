@@ -3,13 +3,6 @@ from pylua.luaframe import LuaBuiltinFrame
 from pylua.helpers import debug_print
 
 
-def m_print(arg):
-    """
-    prints arg to std out
-    """
-    print(arg.to_str())
-
-
 class Interpreter(object):
     def __init__(self, flags, root_frame):
         self.flags = flags
@@ -18,9 +11,6 @@ class Interpreter(object):
     def run(self):
         returnvalue = None
         space = ObjectSpace()
-        # register a global print function, only works with one argument at the
-        # moment and is a hack
-        space.globals['print'] = LuaBuiltinFrame(m_print)
 
         returnvalue = self.root_frame.execute_frame(space)
 

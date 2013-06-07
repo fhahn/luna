@@ -20,6 +20,7 @@ class LuaFrame(W_Object):
 class LuaBuiltinFrame(LuaFrame):
     def __init__(self, function):
         self.function = function
+        self.registers = []
 
     def call0(self, space):
         # print specific
