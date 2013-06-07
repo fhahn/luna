@@ -213,7 +213,7 @@ class LuaBytecodeFrame(LuaFrame):
         v1 = self.get_num_register(args[1])
         v2 = self.get_num_constant(args[2])
         debug_print("ADDVN: Reg[%s] = %s + %s" % (args[0], v1, v2))
-        self.registers[args[0]] = W_Num(v1 + v2)
+        self.registers[args[0]] = W_Num(v1+v2)
 
     def SUBVN(self, args, space):
         """
@@ -237,23 +237,23 @@ class LuaBytecodeFrame(LuaFrame):
     def MODVN(self, args, space): raise NotImplementedError('MODVN not implemented') 
 
     def ADDNV(self, args, space):
-        v1 = self.get_num_constant(args[1])
-        v2 = self.get_num_register(args[2])
+        v1 = self.get_num_constant(args[2])
+        v2 = self.get_num_register(args[1])
         self.registers[args[0]] = W_Num(v1+v2)
 
     def SUBNV(self, args, space):
-        v1 = self.get_num_constant(args[1])
-        v2 = self.get_num_register(args[2])
+        v1 = self.get_num_constant(args[2])
+        v2 = self.get_num_register(args[1])
         self.registers[args[0]] = W_Num(v1-v2)
 
     def MULNV(self, args, space):
-        v1 = self.get_num_constant(args[1])
-        v2 = self.get_num_register(args[2])
+        v1 = self.get_num_constant(args[2])
+        v2 = self.get_num_register(args[1])
         self.registers[args[0]] = W_Num(v1*v2)
 
     def DIVNV(self, args, space):
-        v1 = self.get_num_constant(args[1])
-        v2 = self.get_num_register(args[2])
+        v1 = self.get_num_constant(args[2])
+        v2 = self.get_num_register(args[1])
         self.registers[args[0]] = W_Num(v1/float(v2))
 
     def MODNV(self, args, space): raise NotImplementedError('MODNV not implemented') 

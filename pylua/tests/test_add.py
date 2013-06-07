@@ -35,9 +35,23 @@ class TestAddition(object):
                 """)
         assert ret.getval() == 131082
 
+    def test_addvn_long(self):
+        ret = codetest("""
+                x = 1310720
+                return x+10000000
+                """)
+        assert ret.getval() == 11310720
+
     def test_addnv(self):
         ret = codetest("""
                 x = 131
                 return 10 + x
                 """)
         assert ret.getval() == 141
+
+    def test_addnv_long(self):
+        ret = codetest("""
+                x = 1310720
+                return 10000000 + x
+                """)
+        assert ret.getval() == 11310720
