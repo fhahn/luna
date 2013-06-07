@@ -1,10 +1,7 @@
 class W_Object(object):
     def __init__(self):
-        self.type = 'BASE'
-        self.val = None
-
-    def getval(self):
-        return self.val
+        self.n_val = 0
+        self.s_val = ''
 
     def eq(self, w_other):
         raise NotImplementedError('eq not supported by this class')
@@ -34,7 +31,6 @@ class W_Object(object):
 class W_Num(W_Object):
     def __init__(self, val):
         self.n_val = val
-        self.type = 'NUM'
 
     def getval(self):
         return self.n_val
@@ -72,7 +68,6 @@ class W_Num(W_Object):
 class W_Str(W_Object):
     def __init__(self, val):
         self.s_val = val
-        self.type = 'STR'
 
     def getval(self):
         return self.s_val
@@ -110,7 +105,6 @@ class W_Str(W_Object):
 class W_Func(W_Object):
     def __init__(self, val):
         self.f_val = val
-        self.type = 'STR'
 
     def getval(self):
         return self.f_val

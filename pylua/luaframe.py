@@ -70,7 +70,6 @@ class LuaBytecodeFrame(LuaFrame):
 
     def get_str_constant(self, val):
         w_v = self.constants[self.num_constants-val-1]
-        assert isinstance(w_v, W_Str)
         return w_v
 
     def get_func_constant(self, val):
@@ -79,14 +78,10 @@ class LuaBytecodeFrame(LuaFrame):
         return w_v
 
     def get_num_constant(self, val):
-        w_v = self.constants[val]
-        assert isinstance(w_v, W_Num)
-        return w_v.getval()
+        return self.constants[val].n_val
 
     def get_num_register(self, pos):
-        w_v = self.registers[pos]
-        assert isinstance(w_v, W_Num)
-        return w_v.getval()
+        return self.registers[pos].n_val
 
     def ISLT(self, args, space):
         """
@@ -359,7 +354,7 @@ class LuaBytecodeFrame(LuaFrame):
        A: dst, D: str
        get global
        """
-       key = self.get_str_constant(args[1]).getval()
+       key = self.get_str_constant(args[1]).s_val
        debug_print("GGET: get %s in R %s" % (key, args[0]))
        self.registers[args[0]] = space.globals[key]
 
@@ -368,7 +363,7 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, D: str
         Set Global
         """
-        key = self.get_str_constant(args[1]).getval()
+        key = self.get_str_constant(args[1]).s_val
         val = self.registers[args[0]]
         debug_print('GSET: set global %s to %s' %(key, val))
         self.space.globals[key] = val
@@ -452,11 +447,8 @@ class LuaBytecodeFrame(LuaFrame):
         #TODO combine FORI and FORL?
         base = args[0]
         w_idx = self.registers[base]
-        assert isinstance(w_idx, W_Num)
         w_stop = self.registers[base+1]
-        assert isinstance(w_stop, W_Num)
         w_step = self.registers[base+2]
-        assert isinstance(w_step, W_Num)
         if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return 1
         else:
@@ -467,11 +459,8 @@ class LuaBytecodeFrame(LuaFrame):
     def FORL(self, args, space):
         base = args[0]
         w_idx = self.registers[base]
-        assert isinstance(w_idx, W_Num)
         w_stop = self.registers[base+1]
-        assert isinstance(w_stop, W_Num)
         w_step = self.registers[base+2]
-        assert isinstance(w_step, W_Num)
         w_idx.n_val += w_step.n_val
         if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return args[1] - 32768 + 1
