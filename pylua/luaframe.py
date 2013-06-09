@@ -22,12 +22,8 @@ class LuaBuiltinFrame(LuaFrame):
         self.function = function
         self.registers = []
 
-    def call0(self, space):
-        # print specific
-        return self.function(W_Str(''))
-
-    def call1(self, arg, space):
-        return self.function(arg)
+    def call(self, args, space):
+        return self.function(args)
 
     def clone(self):
         # no need to cleon, LuaBuilinFrame has no state
@@ -38,8 +34,11 @@ class LuaBytecodeFrame(LuaFrame):
     def call0(self, space):
         return self.execute_frame(space)
 
-    def call1(self, arg, space):
-        self.registers[0] = arg.clone()
+    def call(self, args, space):
+        i = 0
+        for arg in args:
+            self.registers[i] = arg.clone()
+            i += 1
         return self.execute_frame(space)
 
     def execute_frame(self, space):
@@ -384,21 +383,21 @@ class LuaBytecodeFrame(LuaFrame):
 
     def CALL(self, args, space):
         w_func = self.registers[args[0]]
-        assert isinstance(w_func, LuaFrame)
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
-        func = w_func.getval()
-        old_regs = func.registers
-        func.registers = list(old_regs)
-
-        if args[2] == 1: # 0 arguments
-            w_res = func.call0(space)
-        elif args[2] == 2: # 1 argument
-            w_res = func.call1(self.registers[args[0]+1], space)
+        if isinstance(w_func, LuaBytecodeFrame):
+            old_regs = w_func.registers
+            w_func.registers = list(old_regs)
+            j = 0
+            for i in xrange(1, args[2]):
+                w_func.registers[j] = self.registers[args[0]+i]
+                j = j+1
+            w_res = w_func.execute_frame(space)
+            w_func.registers = old_regs
+        elif isinstance(w_func, LuaBuiltinFrame):
+            w_res = w_func.function([self.registers[args[0]+i].clone() for i in xrange(1, args[2])])
         else:
-            w_res = W_Object()
-
-        func.registers = old_regs
+            assert 0
 
         if args[1] == 1: #no return values
             pass

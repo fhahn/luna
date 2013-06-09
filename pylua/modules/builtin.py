@@ -10,8 +10,6 @@ Builtin = ModuleDef('Builtin')
 
 
 @Builtin.function('print')
-def method_print(arg):
-    """
-    TODO: handle more arguments
-    """
-    print(arg.to_str())
+def method_print(args):
+    args = ' '.join([x.to_str() for x in args])
+    print args
