@@ -24,6 +24,25 @@ class TestRepeat(object):
                 """)
         assert ret.getval() == 11
 
+    def test_call_2_args_1_ret(self):
+        ret = codetest("""
+                function foo(x, y)
+                    return x+y;
+                end
+                x = foo(30, 10)
+                return x
+                """)
+        assert ret.getval() == 40
+
+    def test_call_2_args_ret_without_var(self):
+        ret = codetest("""
+                function foo(x, y)
+                    return x+y;
+                end
+                return foo(30, 10)
+                """)
+        assert ret.getval() == 40
+
     def test_call_recursive(self):
         ret = codetest("""
                 function fac(n)

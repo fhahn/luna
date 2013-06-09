@@ -51,7 +51,7 @@ class LuaBytecodeFrame(LuaFrame):
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
                     res = meth(i_args, space)
-                    if op_desc.name in ('RET0', 'RET1', 'RET'):
+                    if op_desc.name in ('RET0', 'RET1', 'RET', 'CALLT'):
                         return res
                     # TODO: return -1 everywhere
                     if res is None or res == -1:
@@ -406,7 +406,26 @@ class LuaBytecodeFrame(LuaFrame):
 
     def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
 
-    def CALLT(self, args, space): raise NotImplementedError('CALLT not implemented') 
+    def CALLT(self, args, space):
+        w_func = self.registers[args[0]]
+        # clone the frame, so every frame has it's own registers
+        # because a frame can be called multiple times (recursion)
+        if isinstance(w_func, LuaBytecodeFrame):
+            old_regs = w_func.registers
+            w_func.registers = list(old_regs)
+            j = 0
+            for i in xrange(1, args[1]):
+                w_func.registers[j] = self.registers[args[0]+i]
+                j = j+1
+            w_res = w_func.execute_frame(space)
+            w_func.registers = old_regs
+        elif isinstance(w_func, LuaBuiltinFrame):
+            w_res = w_func.function([self.registers[args[0]+i].clone() for i in xrange(1, args[1])])
+        else:
+            assert 0
+
+        return w_res
+
 
     def ITERC(self, args, space): raise NotImplementedError('ITERC not implemented') 
 
