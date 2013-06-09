@@ -1,3 +1,5 @@
+import pytest
+
 from ..helpers import codetest
 
 
@@ -56,3 +58,76 @@ class TestBuiltin(object):
                 """)
         out, _ = capsys.readouterr()
         assert out == "2 plus 3 = 5\n"
+
+    def test_assert_false_0(self):
+        with pytest.raises(AssertionError) as ex:
+            codetest("""
+                        assert(0)
+                    """)
+        assert ex.exconly() == "AssertionError: assertion failed" 
+    
+    def test_assert_false_nil(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            assert(nil)
+                        """)
+            assert ex.exconly() == "AssertionError: assertion failed" 
+
+    def test_assert_false_gt(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            assert(1 > 2)
+                        """)
+            assert ex.exconly() == "AssertionError: assertion failed" 
+
+    def test_assert_false_with_vars_lt(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            x = 100
+                            y = 10
+                            assert(y > x)
+                        """)
+            assert ex.exconly() == "AssertionError: assertion failed" 
+
+    def test_assert_false_with_msg(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            x = 100
+                            y = 10
+                            assert(y == x, "error")
+                        """)
+            assert ex.exconly() == "AssertionError: error" 
+
+    def test_assert_false_with_and(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            assert(true and false)
+                        """)
+
+    def test_assert_true_with_or(self):
+            with pytest.raises(AssertionError) as ex:
+                codetest("""
+                            assert(false or false)
+                        """)
+
+    def test_assert_true_1(self):
+        codetest("""
+                    assert(1)
+                """)
+
+    def test_assert_true_with_vars_lt(self):
+            codetest("""
+                        x = 100
+                        y = 10
+                        assert(y < x)
+                    """)
+
+    def test_assert_true_with_and(self):
+            codetest("""
+                        assert(true and true)
+                    """)
+    def test_assert_true_with_or(self):
+            codetest("""
+                        assert(false or true)
+                    """)
+

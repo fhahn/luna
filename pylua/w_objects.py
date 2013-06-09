@@ -125,3 +125,6 @@ class W_Pri(W_Num):
             return 'false'
         else:
             return 'true'
+
+    def clone(self):
+        return W_Pri(self.n_val)
