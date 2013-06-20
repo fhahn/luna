@@ -17,7 +17,7 @@ from rpython.rlib.unroll import unrolling_iterable
 from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
 from pylua.luaframe import LuaBytecodeFrame
 from pylua.helpers import debug_print
-from pylua.w_objects import W_Str, W_Num
+from pylua.w_objects import W_Str, W_Num, W_Table, W_Pri
 
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]
@@ -42,6 +42,7 @@ def decode_arg(self, type, val):
     else:
      return Arg(val)
 """
+
 
 
 class Parser(object):
@@ -82,6 +83,25 @@ class Parser(object):
                 break
             shift += 7
         return result
+
+    def parse_tab_entry(self):
+        t_type = self.uleb()
+        if t_type == 0:
+            # NIL
+            return W_Pri(0)
+        elif t_type == 1:
+            # FALSE
+            return W_Pri(1)
+        elif t_type == 2:
+            # TRUE
+            return W_Pri(2)
+        elif t_type == 3:
+            # INT
+            return W_Num(self.uleb())
+        elif t_type == 4:
+            return self.read_knum()
+        else:
+            return self.const_str(t_type)
 
     def parse(self):
         # parses a luajit bytecode file
@@ -141,11 +161,28 @@ class Parser(object):
         #TODO imlement constant parsing
         for i in xrange(0, num_kgc):
             u = self.uleb()
-
             # CHILD
             if u == 0:
                 childc -= 1
                 constants[num_kn+i] = self.frames[childc]
+            elif u == 1:
+                len_array = self.uleb()
+                len_dict = self.uleb()
+                w_table = W_Table()
+                if len_array > 0:
+                    if len_dict > 0:
+                        raise RuntimeError("tables with mixed keys not supported at the moment")
+                    for j in xrange(0, len_array):
+                        w_table.set_val(str(j), self.parse_tab_entry())
+                elif len_dict > 0:
+                    if len_array > 0:
+                        raise RuntimeError("tables with mixed keys not supported at the moment")
+                    for j in xrange(0, len_dict):
+                        key = self.parse_tab_entry()
+                        w_table.set_val(key.to_str(), self.parse_tab_entry())
+                constants[num_kn+i] = w_table
+
+                
             else:  # string and all other things
                 constants[num_kn+i] = self.const_str(u)
             """
