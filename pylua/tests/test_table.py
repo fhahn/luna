@@ -93,3 +93,17 @@ class TestTable(object):
                 return x["tmp"] + x["foo"]
                 """)
         assert ret.getval() == 100.0001+555.5
+
+    def test_table_invalid_num_key(self):
+        ret = codetest("""
+                x =  {["foo"] = 100.0001, ["tmp"] = 555.5}
+                return x[999] 
+        """)
+        assert ret.getval() == 0
+
+    def test_table_invalid_str_key(self):
+        ret = codetest("""
+                x =  {["foo"] = 100.0001, ["tmp"] = 555.5}
+                return x["invlaid"] 
+        """)
+        assert ret.getval() == 0

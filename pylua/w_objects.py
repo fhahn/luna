@@ -140,9 +140,12 @@ class W_Table(W_Object):
         self.content = {}
 
     def get_val(self, key):
-        w_v = self.content[key]
-        assert isinstance(w_v, W_Object)
-        return w_v
+        try:
+            w_v = self.content[key]
+            assert isinstance(w_v, W_Object)
+            return w_v
+        except KeyError:
+            return W_Pri(0)
 
     def set_val(self, key, val):
         self.content[key] = val
