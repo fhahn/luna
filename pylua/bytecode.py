@@ -99,7 +99,24 @@ class Parser(object):
             # INT
             return W_Num(self.uleb())
         elif t_type == 4:
-            return self.read_knum()
+            # for some reason luajit does save
+            # table values as floats and makes no
+            # distinction between float and int numbers
+            # so we cant user Parser.read_knum
+            lo = self.uleb()
+            hi = self.uleb()
+            hi = hi << 32
+            res = float_unpack(lo | hi, 8)
+            i_res = int(res)
+            # TODO improve
+            # numbers are stored as floats, so res is a float,
+            # but if its whole number the string of the number has
+            # a .0 at the end, but when accessing the key does not
+            # have .0
+            if (res - i_res) == 0:
+                return W_Num(i_res)
+            else:
+                return W_Num(res)
         else:
             return self.const_str(t_type)
 
@@ -178,8 +195,9 @@ class Parser(object):
                     if len_array > 0:
                         raise RuntimeError("tables with mixed keys not supported at the moment")
                     for j in xrange(0, len_dict):
-                        key = self.parse_tab_entry()
-                        w_table.set_val(key.to_str(), self.parse_tab_entry())
+                        w_key = self.parse_tab_entry()
+                        w_val = self.parse_tab_entry()
+                        w_table.set_val(w_key.to_str(), w_val)
                 constants[num_kn+i] = w_table
 
                 

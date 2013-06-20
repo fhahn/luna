@@ -75,7 +75,21 @@ class TestTable(object):
 
     def test_table_constructor_num_vals(self):
         ret = codetest("""
-                x =  {["foo"] = 10, ["tmp"] = 5.5}
+                x =  {["foo"] = 100, ["tmp"] = 55}
                 return x["tmp"] + x["foo"]
                 """)
-        assert ret.getval() == 100+55.5
+        assert ret.getval() == 100+55
+
+    def test_table_constructor_num_key(self):
+        ret = codetest("""
+                x =  {["Foo"] = "bar", [111] = 1}
+                return x[111]
+                """)
+        assert ret.getval() == 1
+
+    def test_table_constructor_num_and_float_vals(self):
+        ret = codetest("""
+                x =  {["foo"] = 100.0001, ["tmp"] = 555.5}
+                return x["tmp"] + x["foo"]
+                """)
+        assert ret.getval() == 100.0001+555.5
