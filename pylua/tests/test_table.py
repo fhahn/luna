@@ -1,0 +1,81 @@
+from .helpers import codetest
+
+
+class TestTable(object):
+    def test_set_get_str_key_num(self):
+        ret = codetest("""
+                x = {}
+                x["test"] = 99
+                return x["test"]
+                """)
+        assert ret.getval() == 99
+
+    def test_set_get_str_key_str(self):
+        ret = codetest("""
+                x = {}
+                x["test"] = "str"
+                return x["test"]
+                """)
+        assert ret.getval() == "str"
+
+    def test_set_get_num_key_num(self):
+        ret = codetest("""
+                x = {}
+                x[1] = 99
+                return x[1]
+                """)
+        assert ret.getval() == 99
+
+    def test_set_get_num_key_str(self):
+        ret = codetest("""
+                x = {}
+                x[1] = "str"
+                return x[1]
+                """)
+        assert ret.getval() == "str"
+
+    def test_set_get_var_str_key_num(self):
+        ret = codetest("""
+                x = {}
+                key = "key"
+                x[key] = 99
+                return x[key]
+                """)
+        assert ret.getval() == 99
+
+    def test_set_get_var_str_key_str(self):
+        ret = codetest("""
+                x = {}
+                key = "key"
+                x[key] = "str"
+                return x[key]
+                """)
+        assert ret.getval() == "str"
+
+    def test_table_as_array_num(self):
+        ret = codetest("""
+                x = { 5, 2, 3}
+                return x[1] + x[3]
+                """)
+        assert ret.getval() == 8
+
+    def test_table_as_array_str(self):
+        ret = codetest("""
+                x = { "a", "b", "c"}
+                return x[2]
+                """)
+        assert ret.getval() == "b"
+
+    def test_table_constructor_str_vals(self):
+        ret = codetest("""
+                x =  {["foo"] = "bar", ["tmp"] = "dir"}
+                return x["tmp"]
+                """)
+        assert ret.getval() == "dir"
+
+    def test_table_constructor_num_vals(self):
+        ret = codetest("""
+                x =  {["foo"] = 10, ["tmp"] = 5.5}
+                return x["tmp"] + x["foo"]
+                """)
+        assert ret.getval() == 100+55.5
