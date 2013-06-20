@@ -1,6 +1,6 @@
 from pylua.opcodes import unrolled_op_desc
 from pylua.helpers import debug_print
-from pylua.w_objects import W_Str, W_Num, W_Object, W_Pri
+from pylua.w_objects import W_Str, W_Num, W_Object, W_Pri, W_Table
 
 
 class LuaFrame(W_Object):
@@ -79,6 +79,9 @@ class LuaBytecodeFrame(LuaFrame):
 
     def get_num_register(self, pos):
         return self.registers[pos].n_val
+
+    def get_tab_constant(self, val):
+        return self.constants[self.num_constants-1-val]
 
     def ISLT(self, args, space):
         """
@@ -342,9 +345,17 @@ class LuaBytecodeFrame(LuaFrame):
     def FNEW(self, args, space):
         self.registers[args[0]]= self.get_func_constant(args[1])
 
-    def TNEW(self, args, space): raise NotImplementedError('TNEW not implemented') 
+    def TNEW(self, args, space): 
+        # ignore table size at the moment
+        self.registers[args[0]] = W_Table()
 
-    def TDUP(self, args, space): raise NotImplementedError('TDUP not implemented') 
+    def TDUP(self, args, space):
+        w_table = self.get_tab_constant(args[1])
+        assert isinstance(w_table, W_Table)
+        w_dup = W_Table()
+        # TODO: deep copy expceted here?
+        w_dup.content = w_table.content.copy()
+        self.registers[args[0]] = w_dup
 
     def GGET(self, args, space):
        """
@@ -365,18 +376,40 @@ class LuaBytecodeFrame(LuaFrame):
         debug_print('GSET: set global %s to %s' %(key, val))
         self.space.globals[key] = val
 
-    def TGETV(self, args, space): raise NotImplementedError('TGETV not implemented') 
+    def TGETV(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        w_key = self.registers[args[2]]
+        self.registers[args[0]] = w_t.get_val(w_key.to_str())
 
-    def TGETS(self, args, space): raise NotImplementedError('TGETS not implemented') 
+    def TGETS(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        w_key = self.get_str_constant(args[2])
+        self.registers[args[0]] = w_t.get_val(w_key.s_val)
 
-    def TGETB(self, args, space): raise NotImplementedError('TGETB not implemented') 
+    def TGETB(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        self.registers[args[0]] = w_t.get_val(str(args[2]))
 
-    def TSETV(self, args, space): raise NotImplementedError('TSETV not implemented') 
+    def TSETV(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        w_key = self.registers[args[2]]
+        w_t.set_val(w_key.to_str(), self.registers[args[0]])
 
-    def TSETS(self, args, space): raise NotImplementedError('TSETS not implemented') 
+    def TSETS(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        w_key = self.get_str_constant(args[2])
+        w_t.set_val(w_key.s_val, self.registers[args[0]])
 
-    def TSETB(self, args, space): raise NotImplementedError('TSETB not implemented') 
-
+    def TSETB(self, args, space):
+        w_t = self.registers[args[1]]
+        assert isinstance(w_t, W_Table)
+        w_t.set_val(str(args[2]), self.registers[args[0]])
+ 
     def TSETM(self, args, space): raise NotImplementedError('TSETM not implemented') 
 
     def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 

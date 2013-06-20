@@ -125,17 +125,17 @@ def_op('GGET', 52, ARGS_AD)
 
 def_op('GSET', 53, ARGS_AD)
 
-def_op('TGETV', 54, ARGS_AD)
+def_op('TGETV', 54, ARGS_ABC)
 
-def_op('TGETS', 55, ARGS_AD)
+def_op('TGETS', 55, ARGS_ABC)
 
-def_op('TGETB', 56, ARGS_AD)
+def_op('TGETB', 56, ARGS_ABC)
 
-def_op('TSETV', 57, ARGS_AD)
+def_op('TSETV', 57, ARGS_ABC)
 
-def_op('TSETS', 58, ARGS_AD)
+def_op('TSETS', 58, ARGS_ABC)
 
-def_op('TSETB', 59, ARGS_AD)
+def_op('TSETB', 59, ARGS_ABC)
 
 def_op('TSETM', 60, ARGS_AD)
 
