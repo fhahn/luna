@@ -2,6 +2,7 @@ class W_Object(object):
     def __init__(self):
         self.n_val = 0
         self.s_val = ''
+        self.content = {}
 
     def eq(self, w_other):
         raise NotImplementedError('eq not supported by this class')
@@ -26,6 +27,10 @@ class W_Object(object):
 
     def clone(self):
         raise NotImplementedError('to_str not supported by this class')
+    
+    def get_val(self, key):
+        raise NotImplementedError('to_str not supported by this class')
+
 
 
 class W_Num(W_Object):
@@ -128,3 +133,16 @@ class W_Pri(W_Num):
 
     def clone(self):
         return W_Pri(self.n_val)
+
+
+class W_Table(W_Object):
+    def __init__(self):
+        self.content = {}
+
+    def get_val(self, key):
+        w_v = self.content[key]
+        assert isinstance(w_v, W_Object)
+        return w_v
+
+    def set_val(self, key, val):
+        self.content[key] = val
