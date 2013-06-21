@@ -3,10 +3,10 @@ Implementation of Lua's basic functions
 http://www.lua.org/manual/5.1/manual.html#5.1
 """
 from pylua.w_objects import W_Num, W_Pri, W_Str
-from pylua.module import ModuleDef
+from pylua.module import BuiltinDef
 
 
-Builtin = ModuleDef('Builtin')
+Builtin = BuiltinDef('Builtin')
 
 
 @Builtin.function('assert')

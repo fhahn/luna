@@ -1,3 +1,6 @@
+from rpython.rlib.objectmodel import compute_hash, compute_identity_hash
+
+
 class W_Object(object):
     def __init__(self):
         self.n_val = 0
@@ -30,6 +33,9 @@ class W_Object(object):
 
     def get_val(self, key):
         raise NotImplementedError('to_str not supported by this class')
+
+    def hash(self):
+        raise NotImplementedError('hash not supported by this class')
 
 
 class W_Num(W_Object):
@@ -68,6 +74,9 @@ class W_Num(W_Object):
     def clone(self):
         return W_Num(self.n_val)
 
+    def hash(self):
+        return self.n_val
+
 
 class W_Str(W_Object):
     def __init__(self, val):
@@ -105,6 +114,9 @@ class W_Str(W_Object):
     def clone(self):
         return W_Str(self.s_val)
 
+    def hash(self):
+        return compute_hash(self.s_val)
+
 
 class W_Func(W_Object):
     def __init__(self, val):
@@ -140,17 +152,20 @@ class W_Table(W_Object):
 
     def get_val(self, key):
         try:
-            w_v = self.content[key.getval()]
+            w_v = self.content[key.hash()]
             assert isinstance(w_v, W_Object)
             return w_v
         except KeyError:
             return W_Pri(0)
 
     def set_val(self, key, val):
-        self.content[key.getval()] = val
+        self.content[key.hash()] = val
 
     def clone(self):
         # TODO: deep copy expceted here?
         cpy = W_Table()
         cpy.content = self.content.copy()
         return cpy
+
+    def hash(self):
+        return compute_identity_hash(self.content)

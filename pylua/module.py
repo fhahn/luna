@@ -1,5 +1,5 @@
 from pylua.luaframe import LuaBuiltinFrame
-from pylua.w_objects import W_Table
+from pylua.w_objects import W_Table, W_Str
 
 
 class ModuleDef(object):
@@ -9,5 +9,16 @@ class ModuleDef(object):
 
     def function(self, name):
         def adder(func):
-            self.methods.content[name] = LuaBuiltinFrame(func)
+            self.methods.set_val(W_Str(name), LuaBuiltinFrame(func))
+        return adder
+
+
+class BuiltinDef(object):
+    def __init__(self, name):
+        self.name = name
+        self.methods = {}
+
+    def function(self, name):
+        def adder(func):
+            self.methods[name] = LuaBuiltinFrame(func)
         return adder
