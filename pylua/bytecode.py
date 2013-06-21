@@ -44,7 +44,6 @@ def decode_arg(self, type, val):
 """
 
 
-
 class Parser(object):
     def __init__(self,  filename):
         if isinstance(filename, SomeByteArray):
@@ -188,19 +187,19 @@ class Parser(object):
                 w_table = W_Table()
                 if len_array > 0:
                     if len_dict > 0:
-                        raise RuntimeError("tables with mixed keys not supported at the moment")
+                        raise RuntimeError("tables with mixed keys not \
+                                supported at the moment")
                     for j in xrange(0, len_array):
-                        w_table.set_val(str(j), self.parse_tab_entry())
+                        w_table.set_val(W_Num(j), self.parse_tab_entry())
                 elif len_dict > 0:
                     if len_array > 0:
-                        raise RuntimeError("tables with mixed keys not supported at the moment")
+                        raise RuntimeError("tables with mixed keys not\
+                                supported at the moment")
                     for j in xrange(0, len_dict):
                         w_key = self.parse_tab_entry()
                         w_val = self.parse_tab_entry()
-                        w_table.set_val(w_key.to_str(), w_val)
+                        w_table.set_val(w_key, w_val)
                 constants[num_kn+i] = w_table
-
-                
             else:  # string and all other things
                 constants[num_kn+i] = self.const_str(u)
             """

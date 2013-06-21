@@ -26,11 +26,10 @@ class W_Object(object):
         raise NotImplementedError('to_str not supported by this class')
 
     def clone(self):
-        raise NotImplementedError('to_str not supported by this class')
-    
+        raise NotImplementedError('clone not supported by this class')
+
     def get_val(self, key):
         raise NotImplementedError('to_str not supported by this class')
-
 
 
 class W_Num(W_Object):
@@ -141,11 +140,17 @@ class W_Table(W_Object):
 
     def get_val(self, key):
         try:
-            w_v = self.content[key]
+            w_v = self.content[key.getval()]
             assert isinstance(w_v, W_Object)
             return w_v
         except KeyError:
             return W_Pri(0)
 
     def set_val(self, key, val):
-        self.content[key] = val
+        self.content[key.getval()] = val
+
+    def clone(self):
+        # TODO: deep copy expceted here?
+        cpy = W_Table()
+        cpy.content = self.content.copy()
+        return cpy
