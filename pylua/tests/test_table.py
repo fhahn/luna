@@ -97,13 +97,36 @@ class TestTable(object):
     def test_table_invalid_num_key(self):
         ret = codetest("""
                 x =  {["foo"] = 100.0001, ["tmp"] = 555.5}
-                return x[999] 
+                return x[999]
         """)
         assert ret.getval() == 0
 
     def test_table_invalid_str_key(self):
         ret = codetest("""
                 x =  {["foo"] = 100.0001, ["tmp"] = 555.5}
-                return x["invlaid"] 
+                return x["invlaid"]
         """)
         assert ret.getval() == 0
+
+    def test_table_dot_key(self):
+        ret = codetest("""
+                x =  {["foo"] = 999}
+                return x.foo
+        """)
+        assert ret.getval() == 999
+
+    def test_table_same_int_and_str_as_key(self):
+        ret = codetest("""
+                x = {}
+                x[111] = 99
+                x["111"] = 10
+                return x[111] + x["111"]
+        """)
+        assert ret.getval() == 99+10
+
+    def test_table_concat(self):
+        ret = codetest("""
+                t = {"a", "b", "c"}
+                return table.concat(t, ";")
+        """)
+        assert ret.getval() == "a;b;c"
