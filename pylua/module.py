@@ -9,7 +9,7 @@ class ModuleDef(object):
 
     def function(self, name):
         def adder(func):
-            self.methods.set_val(W_Str(name), LuaBuiltinFrame(func))
+            self.methods.set(W_Str(name), LuaBuiltinFrame(func))
         return adder
 
 

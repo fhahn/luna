@@ -377,39 +377,39 @@ class LuaBytecodeFrame(LuaFrame):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
         w_key = self.registers[args[2]]
-        self.registers[args[0]] = w_t.get_val(w_key)
+        self.registers[args[0]] = w_t.get(w_key)
 
     def TGETS(self, args, space):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
         w_key = self.get_str_constant(args[2])
-        self.registers[args[0]] = w_t.get_val(w_key)
+        self.registers[args[0]] = w_t.get(w_key)
 
     def TGETB(self, args, space):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
-        # TODO: we must wrap ints into W_Num because set_val
+        # TODO: we must wrap ints into W_Num because set
         # expects a W_Object as key
-        self.registers[args[0]] = w_t.get_val(W_Num(args[2]))
+        self.registers[args[0]] = w_t.get(W_Num(args[2]))
 
     def TSETV(self, args, space):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
         w_key = self.registers[args[2]]
-        w_t.set_val(w_key, self.registers[args[0]])
+        w_t.set(w_key, self.registers[args[0]])
 
     def TSETS(self, args, space):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
         w_key = self.get_str_constant(args[2])
-        w_t.set_val(w_key, self.registers[args[0]])
+        w_t.set(w_key, self.registers[args[0]])
 
     def TSETB(self, args, space):
         w_t = self.registers[args[1]]
         assert isinstance(w_t, W_Table)
-        # TODO: we must wrap ints into W_Num because set_val
+        # TODO: we must wrap ints into W_Num because set
         # expects a W_Object as key
-        w_t.set_val(W_Num(args[2]), self.registers[args[0]])
+        w_t.set(W_Num(args[2]), self.registers[args[0]])
  
     def TSETM(self, args, space): raise NotImplementedError('TSETM not implemented') 
 

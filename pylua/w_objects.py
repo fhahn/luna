@@ -150,7 +150,10 @@ class W_Table(W_Object):
     def __init__(self):
         self.content = {}
 
-    def get_val(self, key):
+    def size(self):
+        return len(self.content)
+
+    def get(self, key):
         try:
             w_v = self.content[key.hash()]
             assert isinstance(w_v, W_Object)
@@ -158,7 +161,7 @@ class W_Table(W_Object):
         except KeyError:
             return W_Pri(0)
 
-    def set_val(self, key, val):
+    def set(self, key, val):
         self.content[key.hash()] = val
 
     def clone(self):
@@ -169,3 +172,9 @@ class W_Table(W_Object):
 
     def hash(self):
         return compute_identity_hash(self.content)
+
+    def values(self):
+        return self.content.values()
+
+    def items(self):
+        return self.content.items()
