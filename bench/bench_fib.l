@@ -10,4 +10,4 @@ function fib(n)
 
 end
 
-assert(fib(40) == 102334155)
+assert(fib(36) == 14930352)
