@@ -148,3 +148,23 @@ class TestTable(object):
                 return table.concat({ 1, 2, "three", 4, "five" })
         """)
         assert ret.getval() == "12three4five"
+
+    def test_table_insert_at_end(self):
+        ret = codetest("""
+                    t = {}
+                table.insert(t, "c")
+                table.insert(t, "b")
+                table.insert(t, "a")
+                return table.concat(t)
+        """)
+        assert ret.getval() == "cba"
+
+    def test_table_insert_in_the_middle(self):
+        ret = codetest("""
+                t = {"d"}
+                table.insert(t, 1, "c")
+                table.insert(t, 1, "b")
+                table.insert(t, 1, "a")
+                return table.concat(t)
+        """)
+        assert ret.getval() == "abcd"

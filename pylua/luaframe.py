@@ -429,7 +429,15 @@ class LuaBytecodeFrame(LuaFrame):
             w_res = w_func.execute_frame(space)
             w_func.registers = old_regs
         elif isinstance(w_func, LuaBuiltinFrame):
-            w_res = w_func.function([self.registers[args[0]+i].clone() for i in xrange(1, args[2])])
+            params = []
+            for i in xrange(1, args[2]):
+                w_param = self.registers[args[0]+i]
+                if isinstance(w_param, W_Table):
+                        # pass tables as reference
+                    params.append(w_param)
+                else:
+                    params.append(w_param.clone())
+            w_res = w_func.function(params)
         else:
             assert 0
 
