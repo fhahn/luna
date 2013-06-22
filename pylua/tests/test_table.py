@@ -130,3 +130,21 @@ class TestTable(object):
                 return table.concat(t, ";")
         """)
         assert ret.getval() == "a;b;c"
+
+    def test_table_concat_with_i_and_j(self):
+        ret = codetest("""
+                return table.concat({ 1, 2, "three", 4, "five" }, ", ", 2, 4)
+        """)
+        assert ret.getval() == "2, three, 4"
+
+    def test_table_concat_with_i(self):
+        ret = codetest("""
+                return table.concat({ 1, 2, "three", 4, "five" }, ", ", 2)
+        """)
+        assert ret.getval() == "2, three, 4, five"
+
+    def test_table_concat_no_sep(self):
+        ret = codetest("""
+                return table.concat({ 1, 2, "three", 4, "five" })
+        """)
+        assert ret.getval() == "12three4five"
