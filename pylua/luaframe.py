@@ -288,7 +288,14 @@ class LuaBytecodeFrame(LuaFrame):
 
     def POW(self, args, space): raise NotImplementedError('POW not implemented') 
 
-    def CAT(self, args, space): raise NotImplementedError('CAT not implemented') 
+    def CAT(self, args, space):
+        """
+        A: dst, B: rbase, C: rbase
+        concat strings from b to c
+        """
+        w_v1 = self.registers[args[1]]
+        w_v2 = self.registers[args[2]]
+        self.registers[args[0]] = W_Str(''.join([w_v1.to_str(), w_v2.to_str()]))
 
     def KSTR(self, args, space):
         """
