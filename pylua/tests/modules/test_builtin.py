@@ -1,6 +1,6 @@
 import pytest
 
-from ..helpers import codetest
+from ..helpers import codetest, test_file
 
 
 class TestBuiltin(object):
@@ -131,3 +131,23 @@ class TestBuiltin(object):
                         assert(false or true)
                     """)
 
+    def test_loadfile_simple(self):
+        f = test_file(src='return "test"')
+        ret = codetest("""
+                    x = loadfile("%s")
+                    return x()
+                """ % f.name)
+        assert ret.s_val == "test"
+
+    def test_loadfile_function_with_params(self):
+        f = test_file(src='''
+                function foo(x, y)
+                    return x + y
+                end
+                ''')
+        ret = codetest("""
+                    x = loadfile("%s")
+                    x()
+                    return foo(10, 20)
+                """ % f.name)
+        assert ret.n_val == 30
