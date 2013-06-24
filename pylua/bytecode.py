@@ -238,6 +238,11 @@ class Parser(object):
             # TODO n_val can be a float or a int, can this lead
             # to problems when translating?
             return W_Num(res)
+
+        # check if int contant is negative
+        # TODO: not sure if check is correct
+        if lo & (1 << 31) != 0:
+            lo = lo - (1 << 32)
         return W_Num(lo)
 
     def decode_opcode(self, word):

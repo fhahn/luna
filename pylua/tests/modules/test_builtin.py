@@ -59,6 +59,11 @@ class TestBuiltin(object):
         out, _ = capsys.readouterr()
         assert out == "2 plus 3 = 5\n"
 
+    def test_assert_with_stuff(self):
+        codetest("""
+                    assert(-2^- -2 == - - -4)
+                """)
+
     def test_assert_false_0(self):
         with pytest.raises(AssertionError) as ex:
             codetest("""
@@ -151,3 +156,47 @@ class TestBuiltin(object):
                     return foo(10, 20)
                 """ % f.name)
         assert ret.n_val == 30
+
+    def test_tonumber_int(self):
+        ret = codetest("""
+                    x = tonumber("100")
+                    return x + 19
+                """)
+        assert ret.n_val == 119
+
+    def test_tonumber_float(self):
+        ret = codetest("""
+                    x = tonumber("1.55")
+                    return x + 19
+                """)
+        assert ret.n_val == 20.55
+
+    def test_tonumber_invalid(self):
+        ret = codetest("""
+                    x = tonumber("str")
+                    if x == nil then
+                        return 10
+                    else
+                        return 99
+                    end
+                """)
+        assert ret.n_val == 10
+
+    def test_cat_strs(self):
+        ret = codetest("""
+                    return "hal".."lo"
+                """)
+        assert ret.s_val == "hallo"
+
+    def test_cat_ints(self):
+        ret = codetest("""
+                    return 100 .. 99
+                """)
+        assert ret.s_val == "10099"
+
+    def test_cat_str_int(self):
+        ret = codetest("""
+                    return "hallo" .. 99
+                """)
+        assert ret.s_val == "hallo99"
+

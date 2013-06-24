@@ -24,18 +24,20 @@ def main(argv):
         return 1
 
     file_, ext = argv[1].rsplit('.', 1)
+    """
     if ext not in ('l', 'lc'):
-    	print("Unsupported extension %s" %ext)
-    	return 1
+        print("Unsupported extension %s" %ext)
+        return 1
+    """
 
     if _needs_compilation(file_+'.lc', filename):
-    	ret = os.system('luajit -b %s %s' %(filename, filename+'c'))
-    	if ret:
-    		print("Error compiling %s using luajit" % filename)
-    		return 1
+        ret = os.system('luajit -b %s %s' %(filename, filename+'c'))
+        if ret:
+            print("Error compiling %s using luajit" % filename)
+            return 1
 
-    if ext == 'l':
-    	filename += 'c'
+    if not ext.endswith('c'):
+        filename += 'c'
 
     flags, protos = Parser(filename).parse()
     interpreter = Interpreter(flags, protos)
