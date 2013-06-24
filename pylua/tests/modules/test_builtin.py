@@ -199,4 +199,3 @@ class TestBuiltin(object):
                     return "hallo" .. 99
                 """)
         assert ret.s_val == "hallo99"
-
