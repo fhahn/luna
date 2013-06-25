@@ -21,14 +21,14 @@ class TestCompiled(object):
             print(z+y)
             --a = 100+y
 
-            lx = 1234567890
+            lx = 1234567890.55
             ly = 99999999
             print(lx+ly)
             --print(lx+1234567890)
             """, suffix=".l"
         )
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
-        assert out == "20.000000\n25.000000\n1334567889.000000\n"
+        assert out == "20\n25\n1334567889.550000\n"
 
     def test_if_with_num(self, capsys):
         f = test_file(src="""
@@ -184,4 +184,4 @@ class TestCompiled(object):
             """, suffix=".l"
         )
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
-        assert out == "3628800.000000\n"
+        assert out == "3628800\n"

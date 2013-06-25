@@ -69,7 +69,11 @@ class W_Num(W_Object):
         return self.n_val >= w_other.n_val
 
     def to_str(self):
-        return str(self.n_val)
+        i_val = int(self.n_val)
+        if self.n_val - i_val == 0:
+            return str(i_val)
+        else:
+            return str(self.n_val)
 
     def clone(self):
         return W_Num(self.n_val)
