@@ -15,4 +15,4 @@ class Interpreter(object):
         returnvalue = self.root_frame.execute_frame(space)
 
         debug_print("Finished intepreting")
-        return returnvalue
+        return returnvalue[0]

@@ -70,3 +70,15 @@ class TestFor(object):
                 return x
                 """)
         assert ret.getval() == 110
+
+    def test_access_loop_counter(self):
+        ret = codetest("""
+                x = 0
+                for i=1,10,1 do
+                    x = x + i
+                end
+                return x
+                """)
+        assert ret.getval() == 55
+
+

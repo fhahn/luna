@@ -11,7 +11,7 @@ class LuaFrame(W_Object):
         self.instructions = instructions
         self.num_instructions = len(instructions)
         self.cmp_result = False
-        self.registers = [W_Pri(0)] * 10
+        self.registers = [W_Pri(0)] * 50
         self.multires = []
 
     def getval(self):
@@ -228,7 +228,12 @@ class LuaBytecodeFrame(LuaFrame):
         assert isinstance(w_var, W_Num)
         self.registers[args[0]] = W_Num(-w_var.n_val)
 
-    def LEN(self, args, space): raise NotImplementedError('LEN not implemented') 
+    def LEN(self, args, space):
+        w_var = self.registers[args[1]]
+        if isinstance(w_var, W_Table):
+            self.registers[args[0]] = W_Num(len(w_var.content)-1)
+        else:
+            raise NotImplementedError('Len for types other than table not supported atm')
 
     def ADDVN(self, args, space):
         """
@@ -559,6 +564,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_idx = self.registers[base]
         w_stop = self.registers[base+1]
         w_step = self.registers[base+2]
+        self.registers[base+3] = w_idx.clone()
         if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return 1
         else:
@@ -572,6 +578,7 @@ class LuaBytecodeFrame(LuaFrame):
         w_stop = self.registers[base+1]
         w_step = self.registers[base+2]
         w_idx.n_val += w_step.n_val
+        self.registers[base+3] = w_idx.clone()
         if self.continue_for_loop(w_idx.n_val, w_stop.n_val, w_step.n_val):
             return args[1] - 32768 + 1
         else:
