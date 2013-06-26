@@ -37,15 +37,7 @@ def method_loadfile(args):
     filename = args[0].s_val
     ret = os.system('luajit -b %s %s' %(filename, filename+'c'))
     flags, protos = Parser(filename+'c').parse()
-    return protos
-
-
-@Builtin.function('loadfile')
-def method_loadfile(args):
-    filename = args[0].s_val
-    ret = os.system('luajit -b %s %s' %(filename, filename+'c'))
-    flags, protos = Parser(filename+'c').parse()
-    return protos
+    return [protos]
 
 
 @Builtin.function('tonumber')
@@ -53,9 +45,9 @@ def method_tonumber(args):
     if len(args) > 1:
         raise RuntimeError("tonumber with base not supported at the moment")
     try:
-        return W_Num(float(args[0].s_val))
+        return [W_Num(float(args[0].s_val))]
     except ValueError:
-        return W_Pri(0)
+        return [W_Pri(0)]
 
 
 @Builtin.function('type')
@@ -74,4 +66,4 @@ def method_type(args):
         t = 'function'
     else:
         raise RuntimeError('Unsupported type')
-    return W_Str(t)
+    return [W_Str(t)]

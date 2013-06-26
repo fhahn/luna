@@ -12,6 +12,7 @@ class LuaFrame(W_Object):
         self.num_instructions = len(instructions)
         self.cmp_result = False
         self.registers = [W_Pri(0)] * 10
+        self.multires = []
 
     def getval(self):
         return self
@@ -144,7 +145,10 @@ class LuaBytecodeFrame(LuaFrame):
         """
         w_var = self.registers[args[0]]
         w_str = self.get_str_constant(args[1])
-        self.cmp_result = w_var != None and w_var.eq(w_str)
+        if w_var is not None:
+            self.cmp_result = w_var.eq(w_str)
+        else:
+            self.cmp_result = False
 
     def ISNES(self, args, space):
         """
@@ -438,11 +442,22 @@ class LuaBytecodeFrame(LuaFrame):
         # expects a W_Object as key
         w_t.set(W_Num(args[2]), self.registers[args[0]])
  
-    def TSETM(self, args, space): raise NotImplementedError('TSETM not implemented') 
+    def TSETM(self, args, space):
+        """
+        A: base, D: *num
+        (A-1)[D], (A-1)[D+1], ... = A, A+1, ...
+        """
+        w_table = self.registers[args[0]-1]
+        for i in xrange(0, len(self.multires)):
+            w_table.set(W_Num(args[1]+i), self.multires[i])
 
     def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 
 
     def CALL(self, args, space):
+        """
+        A: base, B: lit, C: lit
+        Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
+        """
         w_func = self.registers[args[0]]
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
@@ -468,10 +483,8 @@ class LuaBytecodeFrame(LuaFrame):
         else:
             assert 0
 
-        if args[1] == 1: #no return values
-            pass
-        elif args[1] == 2: # 1 return values
-            self.registers[args[0]] = w_res
+        for i in xrange(0, args[1]-1):
+            self.registers[args[0]+i] = w_res[i]
 
     def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
 
@@ -492,9 +505,7 @@ class LuaBytecodeFrame(LuaFrame):
             w_res = w_func.function([self.registers[args[0]+i].clone() for i in xrange(1, args[1])])
         else:
             assert 0
-
         return w_res
-
 
     def ITERC(self, args, space): raise NotImplementedError('ITERC not implemented') 
 
@@ -506,7 +517,15 @@ class LuaBytecodeFrame(LuaFrame):
 
     def RETM(self, args, space): raise NotImplementedError('RETM not implemented') 
 
-    def RET(self, args, space): raise NotImplementedError('RET not implemented') 
+    def RET(self, args, space):
+        """
+        A: rbase, B: lit
+        return A, ..., A+D-2
+        """
+        w_return_values = []
+        for i in xrange(0, args[1]-1):
+            w_return_values.append(self.registers[args[0]+i])
+        return w_return_values
 
     def RET0(self, args, space): 
         """
@@ -514,7 +533,7 @@ class LuaBytecodeFrame(LuaFrame):
         Return without value
         """
         debug_print("RET0 called")
-        return W_Num(0)
+        return [W_Num(0)]
 
     def RET1(self, args, space):
         """
@@ -524,7 +543,9 @@ class LuaBytecodeFrame(LuaFrame):
         # TODO only numbers at the moment
         w_v = self.registers[args[0]]
         debug_print('RET1: return %s' % w_v.to_str())
-        return w_v
+        # TODO results are wrapped in a list, because it makes returning multiple arguments
+        # easier, improve if possible
+        return [w_v]
 
     def continue_for_loop(self, idx, stop, step):
         if step >= 0:

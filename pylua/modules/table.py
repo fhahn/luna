@@ -35,7 +35,7 @@ def method_concat(args):
     strs = [x.to_str() for x in values
             if not(isinstance(x, W_Pri) and x.n_val == 0)]
     s = sep.join(strs)
-    return W_Str(s)
+    return [W_Str(s)]
 
 
 @TableModule.function('insert')
