@@ -323,9 +323,11 @@ class LuaBytecodeFrame(LuaFrame):
         A: dst, B: rbase, C: rbase
         concat strings from b to c
         """
-        w_v1 = self.registers[args[1]]
-        w_v2 = self.registers[args[2]]
-        self.registers[args[0]] = W_Str(''.join([w_v1.to_str(), w_v2.to_str()]))
+        
+        strs = []
+        for i in xrange(args[1], args[2]+1):
+            strs.append(self.registers[i].to_str())
+        self.registers[args[0]] = W_Str(''.join(strs))
 
     def KSTR(self, args, space):
         """

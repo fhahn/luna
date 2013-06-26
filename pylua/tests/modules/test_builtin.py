@@ -200,6 +200,13 @@ class TestBuiltin(object):
                 """)
         assert ret.s_val == "hallo99"
 
+    def test_cat_int_str_int(self):
+        ret = codetest("""
+                    return 1 .. ", " .. 99
+                """)
+        assert ret.s_val == "1, 99"
+
+
     def test_type_int(self):
         ret = codetest("""
                     x = 10
