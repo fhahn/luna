@@ -12,6 +12,9 @@ class ModuleDef(object):
             self.methods.set(W_Str(name), LuaBuiltinFrame(func))
         return adder
 
+    def add_constant(self, name, w_const):
+        self.methods.set(W_Str(name), w_const)
+
 
 class BuiltinDef(object):
     def __init__(self, name):
