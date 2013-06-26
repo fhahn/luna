@@ -32,16 +32,6 @@ class LuaBuiltinFrame(LuaFrame):
 
 
 class LuaBytecodeFrame(LuaFrame):
-    def call0(self, space):
-        return self.execute_frame(space)
-
-    def call(self, args, space):
-        i = 0
-        for arg in args:
-            self.registers[i] = arg.clone()
-            i += 1
-        return self.execute_frame(space)
-
     def execute_frame(self, space):
         next_instr = 0
         self.space = space
@@ -215,7 +205,10 @@ class LuaBytecodeFrame(LuaFrame):
     def ISF(self, args, space): raise NotImplementedError('ISF not implemented') 
 
     def MOV(self, args, space):
-        self.registers[args[0]] = self.registers[args[1]].clone()
+        w_var = self.registers[args[1]]
+        if not isinstance(w_var, W_Table):
+            w_var = w_var.clone()
+        self.registers[args[0]] = w_var
 
     def NOT(self, args, space): raise NotImplementedError('NOT not implemented') 
 
@@ -231,7 +224,15 @@ class LuaBytecodeFrame(LuaFrame):
     def LEN(self, args, space):
         w_var = self.registers[args[1]]
         if isinstance(w_var, W_Table):
-            self.registers[args[0]] = W_Num(len(w_var.content)-1)
+            l = len(w_var.content)
+            w_first = w_var.get(W_Num(0))
+            try:
+                w_v = w_var.content[W_Num(0).hash()]
+                if isinstance(w_v, W_Pri) and w_v.n_val == 0:
+                    l -= 1
+            except KeyError:
+                pass
+            self.registers[args[0]] = W_Num(l)
         else:
             raise NotImplementedError('Len for types other than table not supported atm')
 
@@ -468,7 +469,7 @@ class LuaBytecodeFrame(LuaFrame):
         # because a frame can be called multiple times (recursion)
         if isinstance(w_func, LuaBytecodeFrame):
             old_regs = w_func.registers
-            w_func.registers = list(old_regs)
+            w_func.registers = [x for x in self.registers]
             j = 0
             for i in xrange(1, args[2]):
                 w_func.registers[j] = self.registers[args[0]+i]
