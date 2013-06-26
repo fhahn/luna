@@ -199,3 +199,49 @@ class TestBuiltin(object):
                     return "hallo" .. 99
                 """)
         assert ret.s_val == "hallo99"
+
+    def test_type_int(self):
+        ret = codetest("""
+                    x = 10
+                    return type(x)
+                """)
+        assert ret.s_val == "number"
+
+    def test_type_float(self):
+        ret = codetest("""
+                    x = 10.10
+                    return type(x)
+                """)
+        assert ret.s_val == "number"
+
+    def test_type_str(self):
+        ret = codetest("""
+                    x = "test"
+                    return type(x)
+                """)
+        assert ret.s_val == "string"
+
+    def test_type_table(self):
+        ret = codetest("""
+                    x = {1,2}
+                    return type(x)
+                """)
+        assert ret.s_val == "table"
+
+    def test_type_boolean(self):
+        ret = codetest("""
+                    x = false
+                    return type(x)
+                """)
+        assert ret.s_val == "boolean"
+
+    def test_type_mixed(self):
+        ret = codetest("""
+                    x = false
+                    x = "string"
+                    x = 10
+                    x = "hallo"
+                    return type(x)
+                """)
+        assert ret.s_val == "string"
+

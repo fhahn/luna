@@ -5,7 +5,8 @@ http://www.lua.org/manual/5.1/manual.html#5.1
 import os 
 
 from pylua.bytecode import Parser
-from pylua.w_objects import W_Num, W_Pri, W_Str
+from pylua.w_objects import W_Num, W_Pri, W_Str, W_Table
+from pylua.luaframe import LuaFrame
 from pylua.module import BuiltinDef
 
 
@@ -55,3 +56,22 @@ def method_tonumber(args):
         return W_Num(float(args[0].s_val))
     except ValueError:
         return W_Pri(0)
+
+
+@Builtin.function('type')
+def method_type(args):
+    w_obj = args[0]
+    t = ""
+    if isinstance(w_obj, W_Pri):
+        t = 'boolean'
+    elif isinstance(w_obj, W_Num):
+        t = "number"
+    elif isinstance(w_obj, W_Str):
+        t = 'string'
+    elif isinstance(w_obj, W_Table):
+        t = 'table'
+    elif isinstance(w_obj, LuaFrame):
+        t = 'function'
+    else:
+        raise RuntimeError('Unsupported type')
+    return W_Str(t)
