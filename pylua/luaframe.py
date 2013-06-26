@@ -144,7 +144,7 @@ class LuaBytecodeFrame(LuaFrame):
         """
         w_var = self.registers[args[0]]
         w_str = self.get_str_constant(args[1])
-        self.cmp_result = w_var.eq(w_str)
+        self.cmp_result = w_var != None and w_var.eq(w_str)
 
     def ISNES(self, args, space):
         """
@@ -189,11 +189,24 @@ class LuaBytecodeFrame(LuaFrame):
         w_pri = W_Pri(args[1])
         self.cmp_result = w_var.neq(w_pri)
 
-    def ISTC(self, args, space): raise NotImplementedError('ISTC not implemented')
+    def ISTC(self, args, space):
+        """
+        A: dst, D: var
+        Copy D to A and jump, if D is true
+        """
+        w_var = self.registers[args[1]]
+        self.registers[args[0]] = w_var.clone()
+        self.cmp_result = w_var.is_true()
 
     def ISFC(self, args, space): raise NotImplementedError('ISFC not implemented') 
 
-    def IST(self, args, space): raise NotImplementedError('IST not implemented') 
+    def IST(self, args, space):
+        """
+        A: , D:var
+        Jump if D is true
+        """
+        w_var = self.registers[args[1]]
+        self.cmp_result = w_var.is_true()
 
     def ISF(self, args, space): raise NotImplementedError('ISF not implemented') 
 
@@ -202,7 +215,14 @@ class LuaBytecodeFrame(LuaFrame):
 
     def NOT(self, args, space): raise NotImplementedError('NOT not implemented') 
 
-    def UNM(self, args, space): raise NotImplementedError('UNM not implemented') 
+    def UNM(self, args, space):
+        """
+        A: dst, D: var
+        Set A to -D (unary minus)
+        """
+        w_var = self.registers[args[1]]
+        assert isinstance(w_var, W_Num)
+        self.registers[args[0]] = W_Num(-w_var.n_val)
 
     def LEN(self, args, space): raise NotImplementedError('LEN not implemented') 
 

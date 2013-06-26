@@ -6,6 +6,7 @@ class W_Object(object):
         self.n_val = 0
         self.s_val = ''
         self.content = {}
+        self.s_type = 'base'
 
     def eq(self, w_other):
         raise NotImplementedError('eq not supported by this class')
@@ -25,6 +26,9 @@ class W_Object(object):
     def le(self, other):
         raise NotImplementedError('le not supported by this class')
 
+    def is_true(self):
+        return True
+
     def to_str(self):
         raise NotImplementedError('to_str not supported by this class')
 
@@ -41,6 +45,7 @@ class W_Object(object):
 class W_Num(W_Object):
     def __init__(self, val):
         self.n_val = val
+        self.s_type = 'number'
 
     def getval(self):
         return self.n_val
@@ -145,6 +150,9 @@ class W_Pri(W_Num):
             return 'false'
         else:
             return 'true'
+
+    def is_true(self):
+        return self.n_val not in (0, 1) 
 
     def clone(self):
         return W_Pri(self.n_val)
