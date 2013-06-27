@@ -13,7 +13,12 @@ def run_script(vm_path, args, script_path):
 if __name__ == '__main__':
     import timeit
 
-    vms = [('luajit', ""), ("luajit", "-joff"), ('lua', ""), ("python", os.path.join(bench_path, '../pylua/main.py')), (os.path.join(bench_path, '../bin/pylua'),"")]
+    vms = [
+            ('luajit', ""),
+            ("luajit", "-joff"), ('lua', ""),
+            #("python", os.path.join(bench_path, '../pylua/main.py')),
+            (os.path.join(bench_path, '../bin/pylua'),"")
+    ]
     bench_scripts = ['bench_loop.l', 'bench_fib.l', 'bench_mergesort.l']
 
     for script in bench_scripts:
@@ -21,7 +26,7 @@ if __name__ == '__main__':
         script_path = os.path.join(bench_path, script)
         results = {}
         for vm in vms:
-            time = timeit.timeit('run_script("{0}", "{1}", "{2}")'.format(vm[0], vm[1], script_path), setup="from __main__ import run_script", number=1)
+            time = timeit.timeit('run_script("{0}", "{1}", "{2}")'.format(vm[0], vm[1], script_path), setup="from __main__ import run_script", number=5)
 
             print("\t %s took %lf" % (vm[0], time))
             results[vm] = time

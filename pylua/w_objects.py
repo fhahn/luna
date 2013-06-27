@@ -6,7 +6,6 @@ class W_Object(object):
         self.n_val = 0
         self.s_val = ''
         self.content = {}
-        self.s_type = 'base'
 
     def eq(self, w_other):
         raise NotImplementedError('eq not supported by this class')
@@ -45,7 +44,6 @@ class W_Object(object):
 class W_Num(W_Object):
     def __init__(self, val):
         self.n_val = val
-        self.s_type = 'number'
 
     def getval(self):
         return self.n_val
