@@ -57,3 +57,34 @@ def method_insert(args):
         w_table.set(pos, args[2])
     else:
         assert 0
+
+
+@TableModule.function('maxn')
+def method_maxn(args):
+    raise NotImplementedError("table.maxn not implemented")
+
+
+@TableModule.function("remove")
+def method_remove(args):
+    assert isinstance(args[0], W_Table)
+    w_table = args[0]
+    assert isinstance(args[1], W_Num)
+    pos = args[1]
+
+    elem = None
+    if pos.n_val < w_table.size() and pos.n_val > 0:
+        elem = w_table.get(pos)
+    else:
+        return [W_Pri(0)]
+
+    items = list(w_table.items())
+
+    i = pos.n_val
+    assert isinstance(i, int)
+    while (i+1) < len(items):
+        k, v = items[i+1]
+        k -= 1
+        w_table.set(W_Num(k), v)
+        i += 1
+    del w_table.content[items[-1][0]]
+    return [elem]

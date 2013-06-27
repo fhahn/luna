@@ -168,3 +168,35 @@ class TestTable(object):
                 return table.concat(t)
         """)
         assert ret.getval() == "abcd"
+
+
+    def test_table_remove_in_the_middle(self):
+        ret = codetest("""
+                t = {"a", "b", "c"}
+                table.remove(t, 2)
+                return t[2]
+        """)
+        assert ret.getval() == "c"
+
+    def test_table_remove_beginning(self):
+        ret = codetest("""
+                t = {"a", "b", "c"}
+                table.remove(t, 1)
+                return t[2]
+        """)
+        assert ret.getval() == "c"
+
+    def test_table_remove_end(self):
+        ret = codetest("""
+                t = {"a", "b", "c"}
+                table.remove(t, 3)
+                return t[2]
+        """)
+        assert ret.getval() == "b"
+
+    def test_table_remove_invalid(self):
+        ret = codetest("""
+                t = {"a", "b", "c"}
+                return table.remove(t, 99)
+        """)
+        assert ret.getval() == 0
