@@ -220,7 +220,7 @@ class Parser(object):
 
     def const_str(self, l):
         l -= 5  # Offset for STR enum
-        assert l > 0
+        assert l >= 0
         v = self.bytes[self.pos:self.pos+l]
         self.pos += l
         return W_Str(v)

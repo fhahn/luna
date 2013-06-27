@@ -5,28 +5,28 @@ from ..helpers import codetest, test_file
 
 class TestBuiltin(object):
     def test_print_str(self, capsys):
-        ret = codetest("""
+        codetest("""
                 print("hallo")
                 """)
         out, _ = capsys.readouterr()
         assert out == "hallo\n"
 
     def test_print_more_strings(self, capsys):
-        ret = codetest("""
+        codetest("""
                 print("hallo", "how", "are", "you")
                 """)
         out, _ = capsys.readouterr()
         assert out == "hallo how are you\n"
 
     def test_print_int(self, capsys):
-        ret = codetest("""
+        codetest("""
                 print(1)
                 """)
         out, _ = capsys.readouterr()
         assert out == "1\n"
 
     def test_print_int_var(self, capsys):
-        ret = codetest("""
+        codetest("""
                 x = 2
                 print(x)
                 """)
@@ -34,21 +34,21 @@ class TestBuiltin(object):
         assert out == "2\n"
 
     def test_print_more_ints(self, capsys):
-        ret = codetest("""
+        codetest("""
                 print(1, 2, 3)
                 """)
         out, _ = capsys.readouterr()
         assert out == "1 2 3\n"
 
     def test_print_int_strings(self, capsys):
-        ret = codetest("""
+        codetest("""
                 print(2, "plus", 3, "=", 5)
                 """)
         out, _ = capsys.readouterr()
         assert out == "2 plus 3 = 5\n"
 
     def test_print_int_strings_as_vars(self, capsys):
-        ret = codetest("""
+        codetest("""
                 x1 = 2
                 x2 = "plus"
                 x3 = 3
@@ -69,21 +69,21 @@ class TestBuiltin(object):
             codetest("""
                         assert(0)
                     """)
-        assert ex.exconly() == "AssertionError: assertion failed" 
-    
+        assert ex.exconly() == "AssertionError: assertion failed"
+
     def test_assert_false_nil(self):
             with pytest.raises(AssertionError) as ex:
                 codetest("""
                             assert(nil)
                         """)
-            assert ex.exconly() == "AssertionError: assertion failed" 
+            assert ex.exconly() == "AssertionError: assertion failed"
 
     def test_assert_false_gt(self):
             with pytest.raises(AssertionError) as ex:
                 codetest("""
                             assert(1 > 2)
                         """)
-            assert ex.exconly() == "AssertionError: assertion failed" 
+            assert ex.exconly() == "AssertionError: assertion failed"
 
     def test_assert_false_with_vars_lt(self):
             with pytest.raises(AssertionError) as ex:
@@ -92,7 +92,7 @@ class TestBuiltin(object):
                             y = 10
                             assert(y > x)
                         """)
-            assert ex.exconly() == "AssertionError: assertion failed" 
+            assert ex.exconly() == "AssertionError: assertion failed"
 
     def test_assert_false_with_msg(self):
             with pytest.raises(AssertionError) as ex:
@@ -101,16 +101,16 @@ class TestBuiltin(object):
                             y = 10
                             assert(y == x, "error")
                         """)
-            assert ex.exconly() == "AssertionError: error" 
+            assert ex.exconly() == "AssertionError: error"
 
     def test_assert_false_with_and(self):
-            with pytest.raises(AssertionError) as ex:
+            with pytest.raises(AssertionError):
                 codetest("""
                             assert(true and false)
                         """)
 
-    def test_assert_true_with_or(self):
-            with pytest.raises(AssertionError) as ex:
+    def test_assert_false_with_or(self):
+            with pytest.raises(AssertionError):
                 codetest("""
                             assert(false or false)
                         """)
@@ -131,6 +131,7 @@ class TestBuiltin(object):
             codetest("""
                         assert(true and true)
                     """)
+
     def test_assert_true_with_or(self):
             codetest("""
                         assert(false or true)
@@ -182,31 +183,6 @@ class TestBuiltin(object):
                 """)
         assert ret.n_val == 10
 
-    def test_cat_strs(self):
-        ret = codetest("""
-                    return "hal".."lo"
-                """)
-        assert ret.s_val == "hallo"
-
-    def test_cat_ints(self):
-        ret = codetest("""
-                    return 100 .. 99
-                """)
-        assert ret.s_val == "10099"
-
-    def test_cat_str_int(self):
-        ret = codetest("""
-                    return "hallo" .. 99
-                """)
-        assert ret.s_val == "hallo99"
-
-    def test_cat_int_str_int(self):
-        ret = codetest("""
-                    return 1 .. ", " .. 99
-                """)
-        assert ret.s_val == "1, 99"
-
-
     def test_type_int(self):
         ret = codetest("""
                     x = 10
@@ -251,4 +227,3 @@ class TestBuiltin(object):
                     return type(x)
                 """)
         assert ret.s_val == "string"
-
