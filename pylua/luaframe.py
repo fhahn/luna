@@ -1,3 +1,5 @@
+from rpython.rlib.rstruct.ieee import pack_float
+from rpython.rlib.rstruct.runpack import runpack
 from pylua.opcodes import unrolled_op_desc
 from pylua.helpers import debug_print
 from pylua.w_objects import W_Str, W_Num, W_Object, W_Pri, W_Table
@@ -42,7 +44,7 @@ class LuaBytecodeFrame(LuaFrame):
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
                     res = meth(i_args, space)
-                    if op_desc.name in ('RET0', 'RET1', 'RET', 'CALLT'):
+                    if op_desc.name in ('RET0', 'RET1', 'RET', 'RETM', 'CALLT'):
                         return res
                     # TODO: return -1 everywhere
                     if res is None or res == -1:
@@ -454,10 +456,17 @@ class LuaBytecodeFrame(LuaFrame):
         """
         A: base, D: *num
         (A-1)[D], (A-1)[D+1], ... = A, A+1, ...
+
+        *num is the index to a num constant that's a float
+        only use first 32 bit of mantissa
         """
         w_table = self.registers[args[0]-1]
+        index = self.get_num_constant(args[1])
+        packed = []
+        pack_float(packed, index, 8, True)
+        index = runpack('>i', packed[0][4:])
         for i in xrange(0, len(self.multires)):
-            w_table.set(W_Num(args[1]+i), self.multires[i])
+            w_table.set(W_Num(index+i), self.multires[i])
 
     def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 
 
@@ -491,8 +500,13 @@ class LuaBytecodeFrame(LuaFrame):
         else:
             assert 0
 
-        for i in xrange(0, args[1]-1):
-            self.registers[args[0]+i] = w_res[i]
+        if args[1] == 0: # multires return
+            self.multires = w_res
+        else:
+            # TODO: if args[1]-1 > len(w_res) overflow registers are not 
+            #       set to nil
+            for i in xrange(0, min(args[1]-1, len(w_res or []))):
+                self.registers[args[0]+i] = w_res[i]
 
     def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
 
@@ -523,7 +537,18 @@ class LuaBytecodeFrame(LuaFrame):
 
     def ISNEXT(self, args, space): raise NotImplementedError('ISNEXT not implemented') 
 
-    def RETM(self, args, space): raise NotImplementedError('RETM not implemented') 
+    def RETM(self, args, space):
+        """
+        A: base, D: lit
+        return A, ..., A+D+MULTRES-1
+        """
+        w_return_values = []
+        for i in xrange(0, args[1]):
+            w_return_values.append(self.registers[args[0]+i])
+
+        w_return_values += self.multires
+        return w_return_values
+
 
     def RET(self, args, space):
         """
