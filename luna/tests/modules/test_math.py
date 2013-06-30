@@ -29,3 +29,15 @@ class TestMath(object):
                 return math.floor(-1.1)
                 """)
         assert ret.n_val == -2 
+
+    def test_sin_1(self, capsys):
+        ret = codetest("""
+                return math.sin(1)
+                """)
+        assert abs(ret.n_val - 0.8414709848079) < 0.000000001
+
+    def test_sin_0(self, capsys):
+        ret = codetest("""
+                return math.sin(0)
+                """)
+        assert ret.n_val == 0
