@@ -46,3 +46,16 @@ class TestConditionals(object):
                 return not "foo"
                 """)
         assert ret.getval() == 1
+
+    def test_knill(self):
+        codetest("""
+                function f()
+                    return 1,2,3
+                end
+                a, b, c = (f());
+                assert(a==1 and b==nil and c==nil)
+        """)
+
+
+
+

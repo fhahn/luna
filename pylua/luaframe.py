@@ -380,7 +380,13 @@ class LuaBytecodeFrame(LuaFrame):
         """
         self.registers[args[0]] = W_Pri(args[1])
 
-    def KNIL(self, args, space): raise NotImplementedError('KNIL not implemented') 
+    def KNIL(self, args, space):
+        """
+        A: base, D: base
+        Set slots A to D to nil
+        """
+        for i in xrange(0, args[1]-args[0]+1):
+            self.registers[args[0]+i] = W_Pri(0)
 
     def UGET(self, args, space): raise NotImplementedError('UGET not implemented') 
 
