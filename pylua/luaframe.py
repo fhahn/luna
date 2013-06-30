@@ -204,7 +204,13 @@ class LuaBytecodeFrame(LuaFrame):
         w_var = self.registers[args[1]]
         self.cmp_result = w_var.is_true()
 
-    def ISF(self, args, space): raise NotImplementedError('ISF not implemented') 
+    def ISF(self, args, space):
+        """
+        A: , D:var
+        Jump if D is false
+        """
+        w_var = self.registers[args[1]]
+        self.cmp_result = not w_var.is_true()
 
     def MOV(self, args, space):
         w_var = self.registers[args[1]]
@@ -212,7 +218,16 @@ class LuaBytecodeFrame(LuaFrame):
             w_var = w_var.clone()
         self.registers[args[0]] = w_var
 
-    def NOT(self, args, space): raise NotImplementedError('NOT not implemented') 
+    def NOT(self, args, space):
+        """
+        A:dst, D: var
+        Set A to boolean not of D
+        """
+        w_var = self.registers[args[1]]
+        if w_var.is_true():
+            self.registers[args[0]] = W_Pri(1)
+        else:
+            self.registers[args[0]] = W_Pri(2)
 
     def UNM(self, args, space):
         """
