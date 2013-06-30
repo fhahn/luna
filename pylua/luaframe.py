@@ -208,7 +208,7 @@ class LuaBytecodeFrame(LuaFrame):
 
     def MOV(self, args, space):
         w_var = self.registers[args[1]]
-        if not isinstance(w_var, W_Table):
+        if not isinstance(w_var, W_Table) and not isinstance(w_var, LuaBytecodeFrame):
             w_var = w_var.clone()
         self.registers[args[0]] = w_var
 
