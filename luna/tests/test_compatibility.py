@@ -15,4 +15,4 @@ class TestCompatibility(object):
     def test_constructs(self, capsys):
         test_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('scripts/constructs.lua'))
         out =  subprocess.check_output([TestCompatibility.PYLUA_BIN, test_file])
-        assert out == "testing syntax\nOK\n"
+        assert out == "testing syntax\n+\nOK\n"

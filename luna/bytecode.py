@@ -216,7 +216,7 @@ class Parser(object):
         for (ind, args) in instructions:
             debug_print(str(OP_DESC[ind].name)+" "+str(args))
 
-        return LuaBytecodeFrame(flags, constants, instructions)
+        return LuaBytecodeFrame(flags, constants, uv_data, instructions)
 
     def const_str(self, l):
         l -= 5  # Offset for STR enum

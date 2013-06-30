@@ -6,7 +6,7 @@ from luna.w_objects import W_Str, W_Num, W_Object, W_Pri, W_Table
 
 
 class LuaFrame(W_Object):
-    def __init__(self, flags, constants, instructions):
+    def __init__(self, flags, constants, uv_data, instructions):
         self.flags = flags
         self.constants = constants
         self.num_constants = len(constants)
@@ -15,6 +15,8 @@ class LuaFrame(W_Object):
         self.cmp_result = False
         self.registers = [W_Pri(0)] * 50
         self.multires = []
+        self.uv_data = uv_data
+        self.parent = None
 
     def getval(self):
         return self
@@ -388,7 +390,20 @@ class LuaBytecodeFrame(LuaFrame):
         for i in xrange(0, args[1]-args[0]+1):
             self.registers[args[0]+i] = W_Pri(0)
 
-    def UGET(self, args, space): raise NotImplementedError('UGET not implemented') 
+    def get_uv(self, uv_ind):
+        local, immutable, ind = self.uv_data[uv_ind]
+
+        if local == 0:
+            return self.parent.get_uv(uv_ind)
+        else:
+            return self.parent.registers[ind]
+
+    def UGET(self, args, space):
+        """
+        A: dst, D: uv
+        Set A to upvalue D
+        """
+        self.registers[args[0]] = self.get_uv(args[1])
 
     def USETV(self, args, space): raise NotImplementedError('USETV not implemented') 
 
@@ -500,8 +515,10 @@ class LuaBytecodeFrame(LuaFrame):
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
         if isinstance(w_func, LuaBytecodeFrame):
+            w_func.parent = self
             old_regs = w_func.registers
             w_func.registers = [x for x in self.registers]
+
             j = 0
             for i in xrange(1, args[2]):
                 w_func.registers[j] = self.registers[args[0]+i]
@@ -524,10 +541,12 @@ class LuaBytecodeFrame(LuaFrame):
         if args[1] == 0: # multires return
             self.multires = w_res
         else:
-            # TODO: if args[1]-1 > len(w_res) overflow registers are not 
-            #       set to nil
-            for i in xrange(0, min(args[1]-1, len(w_res or []))):
+            # TODO: handle overflow case better
+            overflow = max(args[1]-1 - len(w_res or []), 0)
+            for i in xrange(0, args[1]-1 - overflow):
                 self.registers[args[0]+i] = w_res[i]
+            for i in xrange(len(w_res or []), args[1]):
+                self.registers[args[0]+i] = W_Pri(0)
 
     def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
 
@@ -536,6 +555,7 @@ class LuaBytecodeFrame(LuaFrame):
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
         if isinstance(w_func, LuaBytecodeFrame):
+            w_func.parent = self
             old_regs = w_func.registers
             w_func.registers = list(old_regs)
             j = 0

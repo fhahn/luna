@@ -133,6 +133,14 @@ end
 local a,b = 3 and f();
 assert(a==1 and b==nil)
 
+function g() f(); return; end;
+assert(g() == nil)
+function g() return nil or f() end
+a,b = g()
+assert(a==1 and b==nil)
+
+print'+';
+
 
 
 print("OK")
