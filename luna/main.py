@@ -1,8 +1,8 @@
 import sys
 import os
 
-from pylua.bytecode import Parser
-from pylua.interpreter import Interpreter
+from luna.bytecode import Parser
+from luna.interpreter import Interpreter
 
 
 def _needs_compilation(path1, path2):

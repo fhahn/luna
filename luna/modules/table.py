@@ -2,8 +2,8 @@
 Implementation of Lua's table functions
 http://www.lua.org/manual/5.1/manual.html#5.5
 """
-from pylua.w_objects import W_Table, W_Str, W_Pri, W_Num
-from pylua.module import ModuleDef
+from luna.w_objects import W_Table, W_Str, W_Pri, W_Num
+from luna.module import ModuleDef
 
 
 TableModule = ModuleDef('table')

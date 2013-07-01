@@ -1,5 +1,5 @@
-from pylua.bytecode import Parser
-from pylua.tests.helpers import test_file, luabytecode_file
+from luna.bytecode import Parser
+from luna.tests.helpers import test_file, luabytecode_file
 
 
 class TestParser:

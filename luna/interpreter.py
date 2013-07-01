@@ -1,6 +1,6 @@
-from pylua.objspace import ObjectSpace
-from pylua.luaframe import LuaBuiltinFrame
-from pylua.helpers import debug_print
+from luna.objspace import ObjectSpace
+from luna.luaframe import LuaBuiltinFrame
+from luna.helpers import debug_print
 
 
 class Interpreter(object):

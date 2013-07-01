@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-from pylua.tests.helpers import test_file
+from luna.tests.helpers import test_file
 
 
 class TestCompiled(object):
@@ -9,7 +9,7 @@ class TestCompiled(object):
     Tests compiled binary
     """
 
-    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../bin/pylua'))
+    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../bin/luna'))
 
     def test_addition(self, capsys):
         f = test_file(src="""

@@ -1,16 +1,16 @@
 RPY_WRAP = python
-RPY_FLAGS =--output=bin/pylua 
+RPY_FLAGS =--output=bin/luna 
 RPY = ~/projects/python/pypy/rpython/bin/rpython
 
-all: clean pylua
+all: clean luna
 
 clean:
 	rm -rf ./bin
 
-pylua: 
+luna: 
 	mkdir -p ./bin
-	PYTHONPATH="." $(RPY_WRAP) $(RPY) $(RPY_FLAGS) pylua/main.py ../bin/pylua
-.PHONY: pylua
+	PYTHONPATH="." $(RPY_WRAP) $(RPY) $(RPY_FLAGS) luna/main.py ../bin/luna
+.PHONY: luna
 
 test:
 	python runtests.py

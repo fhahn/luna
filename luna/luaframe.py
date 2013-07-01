@@ -1,8 +1,8 @@
 from rpython.rlib.rstruct.ieee import pack_float
 from rpython.rlib.rstruct.runpack import runpack
-from pylua.opcodes import unrolled_op_desc
-from pylua.helpers import debug_print
-from pylua.w_objects import W_Str, W_Num, W_Object, W_Pri, W_Table
+from luna.opcodes import unrolled_op_desc
+from luna.helpers import debug_print
+from luna.w_objects import W_Str, W_Num, W_Object, W_Pri, W_Table
 
 
 class LuaFrame(W_Object):

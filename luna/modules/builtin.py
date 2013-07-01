@@ -4,10 +4,10 @@ http://www.lua.org/manual/5.1/manual.html#5.1
 """
 import os 
 
-from pylua.bytecode import Parser
-from pylua.w_objects import W_Num, W_Pri, W_Str, W_Table
-from pylua.luaframe import LuaFrame
-from pylua.module import BuiltinDef
+from luna.bytecode import Parser
+from luna.w_objects import W_Num, W_Pri, W_Str, W_Table
+from luna.luaframe import LuaFrame
+from luna.module import BuiltinDef
 
 
 Builtin = BuiltinDef('Builtin')

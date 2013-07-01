@@ -14,10 +14,10 @@ from rpython.rlib.rstruct.runpack import runpack
 from rpython.rlib.rstruct.ieee import float_unpack
 from rpython.rlib.unroll import unrolling_iterable
 
-from pylua.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
-from pylua.luaframe import LuaBytecodeFrame
-from pylua.helpers import debug_print
-from pylua.w_objects import W_Str, W_Num, W_Table, W_Pri
+from luna.opcodes import OP_DESC, ARGS_AD, ARGS_ABC
+from luna.luaframe import LuaBytecodeFrame
+from luna.helpers import debug_print
+from luna.w_objects import W_Str, W_Num, W_Table, W_Pri
 
 
 KGC_TYPES = ["CHILD", "TAB", "I64", "U64", "COMPLEX", "STR", "const_str"]

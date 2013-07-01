@@ -1,8 +1,8 @@
-from pylua.w_objects import W_Object
+from luna.w_objects import W_Object
 
-from pylua.modules.builtin import Builtin
-from pylua.modules.table import TableModule
-from pylua.modules.lmath import MathModule
+from luna.modules.builtin import Builtin
+from luna.modules.table import TableModule
+from luna.modules.lmath import MathModule
 
 
 class ObjectSpace(object):

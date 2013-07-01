@@ -1,7 +1,7 @@
 import os
 
-from pylua.main import main
-from pylua.tests.helpers import luabytecode_file, test_file
+from luna.main import main
+from luna.tests.helpers import luabytecode_file, test_file
 
 
 class TestMain(object):

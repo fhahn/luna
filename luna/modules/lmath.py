@@ -4,8 +4,8 @@ Implementation of Lua's mathematical functions
 import sys
 from math import floor
 
-from pylua.w_objects import W_Num
-from pylua.module import ModuleDef
+from luna.w_objects import W_Num
+from luna.module import ModuleDef
 
 
 MathModule = ModuleDef('math')

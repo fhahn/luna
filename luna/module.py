@@ -1,5 +1,5 @@
-from pylua.luaframe import LuaBuiltinFrame
-from pylua.w_objects import W_Table, W_Str
+from luna.luaframe import LuaBuiltinFrame
+from luna.w_objects import W_Table, W_Str
 
 
 class ModuleDef(object):
