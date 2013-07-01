@@ -9,7 +9,7 @@ class TestCompiled(object):
     Tests compiled binary
     """
 
-    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../bin/luna'))
+    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../lunac'))
 
     def test_addition(self, capsys):
         f = test_file(src="""

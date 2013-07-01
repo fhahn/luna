@@ -17,7 +17,7 @@ if __name__ == '__main__':
             ('luajit', ""),
             ("luajit", "-joff"), ('lua', ""),
             #("python", os.path.join(bench_path, '../luna/main.py')),
-            (os.path.join(bench_path, '../bin/luna'),"")
+            (os.path.join(bench_path, '../lunac'),"")
     ]
     bench_scripts = ['bench_loop.l', 'bench_fib.l', 'bench_mergesort.l']
 
