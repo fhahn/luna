@@ -10,7 +10,7 @@ class TestCompatibility(object):
     official lua distribution
     """
 
-    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../bin/luna'))
+    PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../lunac'))
 
     def test_constructs(self, capsys):
         test_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('scripts/constructs.lua'))

@@ -17,4 +17,4 @@ script:
   - export PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"`
   - export PATH=$PATH:`pwd`/lua/ 
   - python translate.py
-    #  - python runtests.py
+  - py.test
