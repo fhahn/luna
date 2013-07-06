@@ -2,8 +2,7 @@ import sys
 
 import pytest
 
-from ..helpers import codetest, test_file
-from luna.modules.patterns import match, Char, Sequence
+from luna.modules.patterns import match, Char, Sequence, build_expr
 
 
 class TestPattern(object):
@@ -41,3 +40,27 @@ class TestPattern(object):
         expr = Sequence(Char('a'), Sequence(Char('b'), Char('c')))
         matches = match(expr, 'ccababababababacccbaccabbbc')
         assert matches == []
+
+    def test_single_char_build_expr(self):
+        expr = build_expr('a')
+        assert isinstance(expr, Char)
+        assert expr.c == 'a'
+
+    def test_two_chars_build_expr(self):
+        expr = build_expr('ab')
+        assert isinstance(expr, Sequence)
+        assert isinstance(expr.left, Char)
+        assert isinstance(expr.right, Char)
+        assert expr.left.c == 'a'
+        assert expr.right.c == 'b'
+
+    def test_three_chars_build_expr(self):
+        expr = build_expr('abc')
+        assert isinstance(expr, Sequence)
+        assert isinstance(expr.left, Sequence)
+        assert isinstance(expr.left.left, Char)
+        assert isinstance(expr.left.right, Char)
+        assert isinstance(expr.right, Char)
+        assert expr.left.left.c == 'a'
+        assert expr.left.right.c == 'b'
+        assert expr.right.c == 'c'

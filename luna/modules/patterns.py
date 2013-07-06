@@ -52,8 +52,17 @@ def match(expr, string):
     return matches
 
 
-"""
 def build_expr(pattern):
+    expr = None
+    seq = False
     for c in pattern:
         if ord(c) >= ord('0') and ord(c) <= ord('z'):
-"""
+            if seq:
+                expr = Sequence(expr, Char(c))
+            else:
+                expr = Char(c)
+            seq = True
+        else:
+            assert 0
+    return expr
+
