@@ -1,7 +1,8 @@
 """
 Lua pattern matcher
 
-inspired by http://morepypy.blogspot.com/2010/05/efficient-and-elegant-regular.html
+inspired by
+http://morepypy.blogspot.com/2010/05/efficient-and-elegant-regular.html
 """
 
 
@@ -31,7 +32,7 @@ class Sequence(Pattern):
 
     def _shift(self, c, mark):
         old_left = self.left.marked
-        left_marked = self.left.shift(c, mark)
+        self.left.shift(c, mark)
         right_marked = self.right.shift(c, mark)
         return old_left and right_marked
 
@@ -42,7 +43,7 @@ class Char(Pattern):
         self.c = c
 
     def _shift(self, c, mark):
-         return mark and c == self.c
+        return mark and c == self.c
 
 
 def find(expr, string, start):

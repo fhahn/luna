@@ -1,7 +1,5 @@
 """
 """
-import sys
-
 from luna.w_objects import W_Pri, W_Num, W_Str
 from luna.module import ModuleDef
 from luna.modules.patterns import find, build_expr

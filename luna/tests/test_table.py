@@ -169,7 +169,6 @@ class TestTable(object):
         """)
         assert ret.getval() == "abcd"
 
-
     def test_table_remove_in_the_middle(self):
         ret = codetest("""
                 t = {"a", "b", "c"}

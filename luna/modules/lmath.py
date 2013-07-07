@@ -18,5 +18,5 @@ def method_floor(args):
 
 
 @MathModule.function('sin')
-def method_floor(args):
+def method_sin(args):
     return [W_Num(sin(args[0].n_val))]

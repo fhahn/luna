@@ -1,7 +1,3 @@
-import sys
-
-import pytest
-
 from luna.modules.patterns import find, Char, Sequence, build_expr
 
 
@@ -70,8 +66,6 @@ class TestPattern(object):
         expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
         result = find(expr, 'abcjjjabc', 100)
         assert result == (-1, -1)
-
-
 
     def test_single_char_build_expr(self):
         expr = build_expr('a', False)

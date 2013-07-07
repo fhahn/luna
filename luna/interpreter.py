@@ -1,5 +1,4 @@
 from luna.objspace import ObjectSpace
-from luna.luaframe import LuaBuiltinFrame
 from luna.helpers import debug_print
 
 
