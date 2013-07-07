@@ -18,6 +18,22 @@ class TestStringModule(object):
         out, _ = capsys.readouterr()
         assert out == "nil nil\n"
 
+    def test_find_pattern_with_dot_match(self, capsys):
+        codetest("""
+            x, y = string.find('ajajajaccaabaa', '.b.')
+            print(x, y)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "11 13\n"
+
+    def test_find_pattern_with_dot_no_match(self, capsys):
+        codetest("""
+            x, y = string.find('ajajajaccajyasda', '.b.')
+            print(x, y)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "nil nil\n"
+
     def test_find_simple_pattern_offset_match(self, capsys):
         codetest("""
             x, y = string.find("Hello Lua user", "Lua", 1)
@@ -73,3 +89,19 @@ class TestStringModule(object):
         """)
         out, _ = capsys.readouterr()
         assert out == "abc\n"
+
+    def test_match_pattern_with_dot_no_match(self, capsys):
+        codetest("""
+            x = string.match('aaaajjbabaajaaaaa', '.b.c')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "nil\n"
+
+    def test_match_pattern_with_dot_match(self, capsys):
+        codetest("""
+            x = string.match('aaaajjbabaajaaxbycaa', '.b.c')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "xbyc\n"

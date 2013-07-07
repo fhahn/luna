@@ -1,4 +1,4 @@
-from luna.modules.patterns import find, Char, Sequence, build_expr
+from luna.modules.patterns import find, Char, Sequence, build_expr, Dot
 
 
 class TestPattern(object):
@@ -90,3 +90,15 @@ class TestPattern(object):
         assert expr.left.left.c == 'a'
         assert expr.left.right.c == 'b'
         assert expr.right.c == 'c'
+
+    def test_chars_and_dots_build_expr(self):
+        expr = build_expr('a.c.', False)
+        assert isinstance(expr, Sequence)
+        assert isinstance(expr.left, Sequence)
+        assert isinstance(expr.left.left, Sequence)
+        assert isinstance(expr.left.left.left, Char)
+        assert expr.left.left.left.c == 'a'
+        assert isinstance(expr.left.left.right, Dot)
+        assert isinstance(expr.left.right, Char)
+        assert expr.left.right.c == 'c'
+        assert isinstance(expr.right, Dot)

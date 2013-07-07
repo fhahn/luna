@@ -46,6 +46,14 @@ class Char(Pattern):
         return mark and c == self.c
 
 
+class Dot(Pattern):
+    def __init__(self):
+        Pattern.__init__(self, False)
+
+    def _shift(self, c, mark):
+        return mark
+
+
 def find(expr, string, start):
     assert isinstance(start, int)
     if start < 0:
@@ -68,13 +76,18 @@ def build_expr(pattern, plain):
     if plain:
         raise RuntimeError('Plain not implemented at the moment')
 
+    new_expr = None
     for c in pattern:
-        if ord(c) >= ord('0') and ord(c) <= ord('z'):
-            if seq:
-                expr = Sequence(expr, Char(c))
-            else:
-                expr = Char(c)
-            seq = True
+        if c == '.':
+            new_expr = Dot()
+        elif ord(c) >= ord('0') and ord(c) <= ord('z'):
+            new_expr = Char(c)
         else:
             assert 0
+        if seq:
+            expr = Sequence(expr, new_expr)
+        else:
+            expr = new_expr
+        seq = True
+
     return expr
