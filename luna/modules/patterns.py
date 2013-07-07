@@ -45,16 +45,28 @@ class Char(Pattern):
          return mark and c == self.c
 
 
-def find(expr, string):
-    for i in xrange(0, len(string)):
+def find(expr, string, start):
+    assert isinstance(start, int)
+    if start < 0:
+        start = len(string) + start
+        # if negative offset is bigger than length of string
+        # start at the beginning
+        if start < 0:
+            start = 0
+        start = int(start)
+    assert start >= 0
+    for i in xrange(start, len(string)):
         if expr.shift(string[i], True):
             return i-expr.length+2, i+1
     return -1, -1
 
 
-def build_expr(pattern):
+def build_expr(pattern, plain):
     expr = None
     seq = False
+    if plain:
+        raise RuntimeError('Plain not implemented at the moment')
+
     for c in pattern:
         if ord(c) >= ord('0') and ord(c) <= ord('z'):
             if seq:
