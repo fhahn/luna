@@ -5,7 +5,7 @@ inspired by http://morepypy.blogspot.com/2010/05/efficient-and-elegant-regular.h
 """
 
 
-class Match(object):
+class Pattern(object):
     def __init__(self, empty):
         # empty denotes whether the regular expression
         # can match the empty string
@@ -22,8 +22,9 @@ class Match(object):
         return marked
 
 
-class Sequence(Match):
+class Sequence(Pattern):
     def __init__(self, left, right):
+        Pattern.__init__(self, False)
         self.left = left
         self.right = right
         self.length = left.length + right.length
@@ -35,21 +36,20 @@ class Sequence(Match):
         return old_left and right_marked
 
 
-class Char(Match):
+class Char(Pattern):
     def __init__(self,  c):
-        super(Char, self).__init__(False)
+        Pattern.__init__(self, False)
         self.c = c
 
     def _shift(self, c, mark):
          return mark and c == self.c
 
 
-def match(expr, string):
-    matches = []
+def find(expr, string):
     for i in xrange(0, len(string)):
         if expr.shift(string[i], True):
-            matches.append(i-expr.length+1)
-    return matches
+            return i-expr.length+2, i+1
+    return -1, -1
 
 
 def build_expr(pattern):
@@ -65,4 +65,3 @@ def build_expr(pattern):
         else:
             assert 0
     return expr
-

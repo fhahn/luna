@@ -2,44 +2,49 @@ import sys
 
 import pytest
 
-from luna.modules.patterns import match, Char, Sequence, build_expr
+from luna.modules.patterns import find, Char, Sequence, build_expr
 
 
 class TestPattern(object):
     def test_single_char_no_match(self):
         expr = Char('c')
-        matches = match(expr, 'xyz')
-        assert matches == []
+        result = find(expr, 'xyz')
+        assert result == (-1, -1)
 
     def test_single_char_one_match(self):
         expr = Char('c')
-        matches = match(expr, 'xcz')
-        assert matches == [1]
+        result = find(expr, 'asdasdxcz')
+        assert result == (8, 8)
 
     def test_single_char_more_matches(self):
         expr = Char('c')
-        matches = match(expr, 'ccaaac')
-        assert matches == [0, 1, 5]
+        result = find(expr, 'xyzaaaccaa')
+        assert result == (7, 7)
 
     def test_two_chars_no_matches(self):
         expr = Sequence(Char('a'), Char('b'))
-        matches = match(expr, 'acbaaubbbbb')
-        assert matches == []
+        result = find(expr, 'acbaaubbbbb')
+        assert result == (-1, -1)
 
     def test_two_chars_one_match(self):
         expr = Sequence(Char('a'), Char('b'))
-        matches = match(expr, 'ccabbbbbaaaaaa')
-        assert matches == [2]
+        result = find(expr, 'ccvvvbbajbajbabb')
+        assert result == (14, 15)
 
     def test_two_chars_two_matches(self):
         expr = Sequence(Char('a'), Char('b'))
-        matches = match(expr, 'abbacaabbcc')
-        assert matches == [0, 6]
+        result = find(expr, 'baaaabbacaabbcc')
+        assert result == (5, 6)
 
     def test_three_chars_no_matches(self):
-        expr = Sequence(Char('a'), Sequence(Char('b'), Char('c')))
-        matches = match(expr, 'ccababababababacccbaccabbbc')
-        assert matches == []
+        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
+        result = find(expr, 'ccababababababacccbaccabbbc')
+        assert result == (-1, -1)
+
+    def test_three_chars_one_matches(self):
+        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
+        result = find(expr, 'ccabababccbababacccbaccabbbc')
+        assert result == (7, 9)
 
     def test_single_char_build_expr(self):
         expr = build_expr('a')
