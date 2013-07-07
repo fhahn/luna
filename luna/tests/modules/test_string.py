@@ -61,3 +61,19 @@ class TestStringModule(object):
                 """)
         out, _ = capsys.readouterr()
         assert out == "nil nil\n"
+
+    def test_match_simple_pattern_no_match(self, capsys):
+        codetest("""
+            x = string.match('aabaajjbabaajaaaaa', 'abc')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "nil\n"
+
+    def test_match_simple_pattern_one_match(self, capsys):
+        codetest("""
+            x = string.match('aacbaajjbabaajaacabaabc', 'abc')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "abc\n"
