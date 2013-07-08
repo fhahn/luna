@@ -37,13 +37,19 @@ class Sequence(Pattern):
         return old_left and right_marked
 
 
-class Char(Pattern):
-    def __init__(self,  c):
+class CharRange(Pattern):
+    def __init__(self, start, stop):
         Pattern.__init__(self, False)
-        self.c = c
+        self.start = start
+        self.stop = stop
 
     def _shift(self, c, mark):
-        return mark and c == self.c
+        return mark and (ord(c) >= self.start and ord(c) <= self.stop)
+
+
+class Char(CharRange):
+    def __init__(self,  c):
+        CharRange.__init__(self, ord(c), ord(c))
 
 
 class Dot(Pattern):
@@ -70,6 +76,10 @@ def find(expr, string, start):
     return -1, -1
 
 
+SPECIAL_CHARS = {
+    'a': (ord('A'), ord('z'))
+}
+
 def build_expr(pattern, plain):
     expr = None
     seq = False
@@ -77,11 +87,22 @@ def build_expr(pattern, plain):
         raise RuntimeError('Plain not implemented at the moment')
 
     new_expr = None
-    for c in pattern:
+    i = 0
+    while i < len(pattern):
+        c = pattern[i]
         if c == '.':
             new_expr = Dot()
         elif ord(c) >= ord('0') and ord(c) <= ord('z'):
             new_expr = Char(c)
+        elif c == '%':
+            i += 1
+            c = pattern[i]
+            if c == '%':
+                new_expr = Char('%')
+            elif c in SPECIAL_CHARS:
+                new_expr = CharRange(*SPECIAL_CHARS[c])
+            else:
+                assert 0
         else:
             assert 0
         if seq:
@@ -89,5 +110,6 @@ def build_expr(pattern, plain):
         else:
             expr = new_expr
         seq = True
+        i += 1
 
     return expr

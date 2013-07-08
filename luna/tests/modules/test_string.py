@@ -74,6 +74,22 @@ class TestStringModule(object):
         out, _ = capsys.readouterr()
         assert out == "nil nil\n"
 
+    def test_find_pattern_with_special_a_match(self, capsys):
+        codetest("""
+            x, y = string.find('123a23aB9Z', '%a%a')
+            print(x, y)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "7 8\n"
+
+    def test_find_pattern_with_special_no_match(self, capsys):
+        codetest("""
+            x, y = string.find('123a23a 9Z', '%a%a')
+            print(x, y)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "nil nil\n"
+
     def test_match_simple_pattern_no_match(self, capsys):
         codetest("""
             x = string.match('aabaajjbabaajaaaaa', 'abc')
@@ -105,3 +121,19 @@ class TestStringModule(object):
         """)
         out, _ = capsys.readouterr()
         assert out == "xbyc\n"
+
+    def test_match_pattern_with_special_a_match(self, capsys):
+        codetest("""
+            x = string.match('123a23aB9Z', '%a%a')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "aB\n"
+
+    def test_match_pattern_with_special_no_match(self, capsys):
+        codetest("""
+            x = string.match('123a23a 9Z', '%a%a')
+            print(x)
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "nil\n"
