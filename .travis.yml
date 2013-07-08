@@ -4,6 +4,7 @@ python:
 # command to install dependencies
 install:
   #- pip install . --use-mirrors
+  - pip install pytest-cov python-coveralls
   - pip install -r requirements.txt --use-mirrors
   - wget https://bitbucket.org/pypy/pypy/get/default.tar.bz2 -O `pwd`/../pypy.tar.bz2
   - tar -xf `pwd`/../pypy.tar.bz2 -C `pwd`/../
@@ -17,4 +18,7 @@ script:
   - export PYTHONPATH=$PYTONPATH:`python -c "import glob; import os; print os.path.abspath(glob.glob('../pypy-pypy*')[0])"`
   - export PATH=$PATH:`pwd`/lua/ 
   - python translate.py
-  - py.test
+  - py.test --cov luna
+
+after_success:
+  - coveralls
