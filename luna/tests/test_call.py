@@ -57,3 +57,49 @@ class TestRepeat(object):
                 return x
                 """)
         assert ret.getval() == 3628800
+
+    def test_nested_function_tailcall(self):
+        """
+        Tests CALLMT with user defined function
+        """
+        ret = codetest("""
+                function f(x)
+                    y = x+1
+                    return y
+                end
+                return f(f(5))
+                """)
+        assert ret.getval() == 7
+
+    def test_nested_function_tailcall_builtin(self):
+        """
+        Tests CALLMT with builtin function
+        """
+        ret = codetest("""
+                return math.sin(math.sin(1))
+                """)
+        assert ret.getval() == 0.7456241416655579
+
+    def test_nested_function_call(self):
+        """
+        Tests CALLM with user function
+        """
+        ret = codetest("""
+                function f(x)
+                    y = x+1
+                    return y
+                end
+                x = f(f(5))
+                return x
+                """)
+        assert ret.getval() == 7
+
+    def test_nested_function_call_builtin(self):
+        """
+        Tests CALLM with builtin function
+        """
+        ret = codetest("""
+                x = math.sin(math.sin(1))
+                return x
+                """)
+        assert ret.getval() == 0.7456241416655579
