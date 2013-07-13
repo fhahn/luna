@@ -506,29 +506,22 @@ class LuaBytecodeFrame(LuaFrame):
 
     def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 
 
-    def CALL(self, args, space):
-        """
-        A: base, B: lit, C: lit
-        Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
-        """
-        w_func = self.registers[args[0]]
+    def call_function(self, f_index, num_args, space):
+        w_func = self.registers[f_index]
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
         if isinstance(w_func, LuaBytecodeFrame):
             w_func.parent = self
             old_regs = w_func.registers
             w_func.registers = [x for x in self.registers]
-
-            j = 0
-            for i in xrange(1, args[2]):
-                w_func.registers[j] = self.registers[args[0]+i]
-                j = j+1
+            assert num_args >= 0
+            w_func.registers[0:num_args] = self.registers[f_index+1:(f_index+num_args)]
             w_res = w_func.execute_frame(space)
             w_func.registers = old_regs
         elif isinstance(w_func, LuaBuiltinFrame):
             params = []
-            for i in xrange(1, args[2]):
-                w_param = self.registers[args[0]+i]
+            for i in xrange(1, num_args):
+                w_param = self.registers[f_index+i]
                 if isinstance(w_param, W_Table):
                         # pass tables as reference
                     params.append(w_param)
@@ -537,8 +530,15 @@ class LuaBytecodeFrame(LuaFrame):
             w_res = w_func.function(params)
         else:
             assert 0
+        return w_res
 
-        if args[1] == 0: # multires return
+    def CALL(self, args, space):
+        """
+        A: base, B: lit, C: lit
+        Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
+        """
+        w_res = self.call_function(args[0], args[2], space)
+        if args[1] == 0:  # multires return
             self.multires = w_res
         else:
             # TODO: handle overflow case better
@@ -548,26 +548,12 @@ class LuaBytecodeFrame(LuaFrame):
             for i in xrange(len(w_res or []), args[1]):
                 self.registers[args[0]+i] = W_Pri(0)
 
-    def CALLMT(self, args, space): raise NotImplementedError('CALLMT not implemented') 
+    def CALLMT(self, args, space):
+        #w_res = self.call_function(args[0], args[2], space)
+        raise NotImplementedError('ITERC not implemented')
 
     def CALLT(self, args, space):
-        w_func = self.registers[args[0]]
-        # clone the frame, so every frame has it's own registers
-        # because a frame can be called multiple times (recursion)
-        if isinstance(w_func, LuaBytecodeFrame):
-            w_func.parent = self
-            old_regs = w_func.registers
-            w_func.registers = list(old_regs)
-            j = 0
-            for i in xrange(1, args[1]):
-                w_func.registers[j] = self.registers[args[0]+i]
-                j = j+1
-            w_res = w_func.execute_frame(space)
-            w_func.registers = old_regs
-        elif isinstance(w_func, LuaBuiltinFrame):
-            w_res = w_func.function([self.registers[args[0]+i].clone() for i in xrange(1, args[1])])
-        else:
-            assert 0
+        w_res = self.call_function(args[0], args[1], space)
         return w_res
 
     def ITERC(self, args, space): raise NotImplementedError('ITERC not implemented') 
@@ -589,7 +575,6 @@ class LuaBytecodeFrame(LuaFrame):
 
         w_return_values += self.multires
         return w_return_values
-
 
     def RET(self, args, space):
         """
