@@ -46,7 +46,7 @@ class LuaBytecodeFrame(LuaFrame):
                 if i_opcode == op_desc.index:
                     meth = getattr(self, op_desc.name)
                     res = meth(i_args, space)
-                    if op_desc.name in ('RET0', 'RET1', 'RET', 'RETM', 'CALLT'):
+                    if op_desc.name in ('RET0', 'RET1', 'RET', 'RETM', 'CALLT', 'CALLMT'):
                         return res
                     # TODO: return -1 everywhere
                     if res is None or res == -1:
@@ -504,24 +504,26 @@ class LuaBytecodeFrame(LuaFrame):
         for i in xrange(0, len(self.multires)):
             w_table.set(W_Num(index+i), self.multires[i])
 
-    def CALLM(self, args, space): raise NotImplementedError('CALLM not implemented') 
+    def CALLM(self, args, space):
 
-    def call_function(self, f_index, num_args, space):
+    def call_function(self, f_index, num_args, space, multires=0):
         w_func = self.registers[f_index]
+        assert num_args >= 0
         # clone the frame, so every frame has it's own registers
         # because a frame can be called multiple times (recursion)
         if isinstance(w_func, LuaBytecodeFrame):
             w_func.parent = self
             old_regs = w_func.registers
             w_func.registers = [x for x in self.registers]
-            assert num_args >= 0
-            w_func.registers[0:num_args] = self.registers[f_index+1:(f_index+num_args)]
+            r_stop = f_index + num_args
+            w_func.registers[0:num_args] = self.registers[f_index+1:r_stop]
+            w_func.registers[num_args:(num_args+multires)] = self.multires
             w_res = w_func.execute_frame(space)
             w_func.registers = old_regs
         elif isinstance(w_func, LuaBuiltinFrame):
             params = []
-            for i in xrange(1, num_args):
-                w_param = self.registers[f_index+i]
+            for w_param in (self.registers[f_index+1:f_index+num_args] +
+                            self.multires):
                 if isinstance(w_param, W_Table):
                         # pass tables as reference
                     params.append(w_param)
@@ -549,8 +551,10 @@ class LuaBytecodeFrame(LuaFrame):
                 self.registers[args[0]+i] = W_Pri(0)
 
     def CALLMT(self, args, space):
-        #w_res = self.call_function(args[0], args[2], space)
-        raise NotImplementedError('ITERC not implemented')
+        w_res = self.call_function(
+            args[0], args[2], space, multires=len(self.multires)
+        )
+        return w_res
 
     def CALLT(self, args, space):
         w_res = self.call_function(args[0], args[1], space)
