@@ -505,6 +505,10 @@ class LuaBytecodeFrame(LuaFrame):
             w_table.set(W_Num(index+i), self.multires[i])
 
     def CALLM(self, args, space):
+        w_res = self.call_function(
+            args[0], args[2], space, multires=len(self.multires)
+        )
+        self.store_return_values(w_res, args[0], args[1])
 
     def call_function(self, f_index, num_args, space, multires=0):
         w_func = self.registers[f_index]
@@ -517,13 +521,13 @@ class LuaBytecodeFrame(LuaFrame):
             w_func.registers = [x for x in self.registers]
             r_stop = f_index + num_args
             w_func.registers[0:num_args] = self.registers[f_index+1:r_stop]
-            w_func.registers[num_args:(num_args+multires)] = self.multires
+            w_func.registers[num_args:(num_args+multires)] = self.multires[:multires]
             w_res = w_func.execute_frame(space)
             w_func.registers = old_regs
         elif isinstance(w_func, LuaBuiltinFrame):
             params = []
             for w_param in (self.registers[f_index+1:f_index+num_args] +
-                            self.multires):
+                    self.multires[:multires]):
                 if isinstance(w_param, W_Table):
                         # pass tables as reference
                     params.append(w_param)
@@ -534,25 +538,28 @@ class LuaBytecodeFrame(LuaFrame):
             assert 0
         return w_res
 
+    def store_return_values(self, values, slots_start, slots_end):
+        if slots_end == 0:  # multires return
+            self.multires = values
+        else:
+            # TODO: handle overflow case better
+            overflow = max(slots_end-1 - len(values or []), 0)
+            for i in xrange(0, slots_end-1 - overflow):
+                self.registers[slots_start+i] = values[i]
+            for i in xrange(len(values or []), slots_end):
+                self.registers[slots_start+i] = W_Pri(0)
+
     def CALL(self, args, space):
         """
         A: base, B: lit, C: lit
         Call: A, ..., A+B-2 = A(A+1, ..., A+C-1)
         """
         w_res = self.call_function(args[0], args[2], space)
-        if args[1] == 0:  # multires return
-            self.multires = w_res
-        else:
-            # TODO: handle overflow case better
-            overflow = max(args[1]-1 - len(w_res or []), 0)
-            for i in xrange(0, args[1]-1 - overflow):
-                self.registers[args[0]+i] = w_res[i]
-            for i in xrange(len(w_res or []), args[1]):
-                self.registers[args[0]+i] = W_Pri(0)
+        self.store_return_values(w_res, args[0], args[1])
 
     def CALLMT(self, args, space):
         w_res = self.call_function(
-            args[0], args[2], space, multires=len(self.multires)
+            args[0], args[1], space, multires=len(self.multires)
         )
         return w_res
 
