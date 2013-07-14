@@ -1,4 +1,4 @@
-from luna.modules.patterns import build_expr, find, Char, Sequence, Dot, CharRange
+from luna.modules.patterns import build_expr, find, Char, Sequence, Dot, CharRange, Star
 
 
 class TestPattern(object):
@@ -66,6 +66,22 @@ class TestPattern(object):
         expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
         result = find(expr, 'abcjjjabc', 100)
         assert result == (-1, -1)
+
+    def test_star_1(self):
+        expr = Star(Char('c'))
+        result = find(expr, 'aaaaaaaabacccca', 0)
+        assert result == (1, 0)
+
+    def test_star_2(self):
+        expr = Star(Char('a'))
+        result = find(expr, 'aaaaaaaabacccca', 0)
+        assert result == (1, 8)
+
+    def test_star_between_chart_star_between_charss(self):
+        expr = Sequence(Char('a'), Star(Char('b')))
+        result = find(expr, 'acjjjabc', 0)
+        assert result == (1, 1)
+
 
     def test_single_char_build_expr(self):
         expr = build_expr('a', False)
