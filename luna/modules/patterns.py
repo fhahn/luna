@@ -12,15 +12,13 @@ class Pattern(object):
         # can match the empty string
         self.empty = empty
         # mark that is shifted through the regex
-        self.marked = False
-        self.length = 1
+        self.matched = 0, 0
 
     def shift(self, c, mark):
         """ shift the mark from left to right, matching character c."""
         # _shift is implemented in the concrete classes
-        marked = self._shift(c, mark)
-        self.marked = marked
-        return marked
+        self.matched = self._shift(c, mark)
+        return self.matched
 
 
 class Sequence(Pattern):
@@ -28,13 +26,17 @@ class Sequence(Pattern):
         Pattern.__init__(self, False)
         self.left = left
         self.right = right
-        self.length = left.length + right.length
 
     def _shift(self, c, mark):
-        old_left = self.left.marked
+        old_left = self.left.matched
         self.left.shift(c, mark)
-        right_marked = self.right.shift(c, mark)
-        return old_left and right_marked
+        right_matched = self.right.shift(c, mark)
+        if old_left[0] != 0 and right_matched[0] != 0:
+            new_matched = (old_left[0] + right_matched[0], old_left[1] + right_matched[1])
+            if new_matched[0] == 0:
+                return 1, new_matched[1]
+            return new_matched
+        return 0, 0
 
 
 class CharRange(Pattern):
@@ -44,7 +46,10 @@ class CharRange(Pattern):
         self.stop = stop
 
     def _shift(self, c, mark):
-        return mark and (ord(c) >= self.start and ord(c) <= self.stop)
+        if mark and (ord(c) >= self.start and ord(c) <= self.stop):
+            return 1, 0
+        else:
+            return 0, 0
 
 
 class Char(CharRange):
@@ -57,7 +62,24 @@ class Dot(Pattern):
         Pattern.__init__(self, False)
 
     def _shift(self, c, mark):
-        return mark
+        return mark, 0
+
+
+class Star(Pattern):
+    def __init__(self, token):
+        Pattern.__init__(self, False)
+        self.token = token
+        self.num_matched = 0
+
+    def _shift(self, c, mark):
+        new_matched = self.token.shift(c, mark)
+        if self.num_matched == 0 and new_matched[0] == 0:
+            return -1, 1
+        elif self.num_matched > 0 and new_matched[0] == 0:
+            return self.num_matched, 1
+        else:
+            self.num_matched += 1
+            return 0, 0
 
 
 def find(expr, string, start):
@@ -71,8 +93,12 @@ def find(expr, string, start):
         start = int(start)
     assert start >= 0
     for i in xrange(start, len(string)):
-        if expr.shift(string[i], True):
-            return i-expr.length+2, i+1
+        matched, greedy = expr.shift(string[i], True)
+        if matched == -1:
+            return i+1, i
+        elif matched > 0:
+            m_start = i-matched+2-greedy
+            return m_start, i+1-greedy
     return -1, -1
 
 
