@@ -125,17 +125,6 @@ class W_Str(W_Object):
         return compute_hash(self.s_val)
 
 
-class W_Func(W_Object):
-    def __init__(self, val):
-        self.f_val = val
-
-    def getval(self):
-        return self.f_val
-
-    def clone(self):
-        return W_Func(self.f_val)
-
-
 class W_Pri(W_Num):
     def __init__(self, val):
         assert val in (0, 1, 2)
