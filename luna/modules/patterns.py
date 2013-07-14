@@ -14,10 +14,10 @@ class Pattern(object):
         # mark that is shifted through the regex
         self.matched = 0, 0
 
-    def shift(self, c, mark):
+    def shift(self, mark, c1, c2=''):
         """ shift the mark from left to right, matching character c."""
         # _shift is implemented in the concrete classes
-        self.matched = self._shift(c, mark)
+        self.matched = self._shift(mark, c1, c2)
         return self.matched
 
 
@@ -27,16 +27,15 @@ class Sequence(Pattern):
         self.left = left
         self.right = right
 
-    def _shift(self, c, mark):
+    def _shift(self, mark, c1, c2):
         old_left = self.left.matched
-        self.left.shift(c, mark)
-        right_matched = self.right.shift(c, mark)
-        if old_left[0] != 0 and right_matched[0] != 0:
-            new_matched = (old_left[0] + right_matched[0], old_left[1] + right_matched[1])
-            if new_matched[0] == 0:
-                return 1, new_matched[1]
-            return new_matched
-        return 0, 0
+        marked_left = self.left.shift(mark, c1, c2)
+        marked_right = self.right.shift(mark, c1, c2)
+        if old_left[0] and marked_right[0]:
+            return True, old_left[1] + marked_right[1]
+        if marked_left[0] and self.right.empty:
+            return True, marked_left[1]
+        return False, 0
 
 
 class CharRange(Pattern):
@@ -45,11 +44,11 @@ class CharRange(Pattern):
         self.start = start
         self.stop = stop
 
-    def _shift(self, c, mark):
-        if mark and (ord(c) >= self.start and ord(c) <= self.stop):
-            return 1, 0
+    def _shift(self, mark, c1, c2):
+        if mark and (ord(c1) >= self.start and ord(c1) <= self.stop):
+            return True, 1
         else:
-            return 0, 0
+            return False, 0
 
 
 class Char(CharRange):
@@ -61,25 +60,28 @@ class Dot(Pattern):
     def __init__(self):
         Pattern.__init__(self, False)
 
-    def _shift(self, c, mark):
-        return mark, 0
+    def _shift(self, mark, c1, c2):
+        return mark, 1
 
 
 class Star(Pattern):
     def __init__(self, token):
-        Pattern.__init__(self, False)
+        Pattern.__init__(self, True)
         self.token = token
         self.num_matched = 0
 
-    def _shift(self, c, mark):
-        new_matched = self.token.shift(c, mark)
-        if self.num_matched == 0 and new_matched[0] == 0:
-            return -1, 1
-        elif self.num_matched > 0 and new_matched[0] == 0:
-            return self.num_matched, 1
+    def _shift(self, mark, c1, c2):
+        matched = self.token.shift(mark, c1, c2)
+        next_matched = self.token.shift(mark, c2, c2)
+        if self.num_matched == 0 and next_matched[0] == 0:
+            return True, 0
+        elif self.num_matched > 0 and next_matched[0] == 0:
+            matched = self.num_matched+1
+            self.num_matched = 0
+            return True, matched
         else:
             self.num_matched += 1
-            return 0, 0
+            return False, 0
 
 
 def find(expr, string, start):
@@ -92,13 +94,20 @@ def find(expr, string, start):
             start = 0
         start = int(start)
     assert start >= 0
-    for i in xrange(start, len(string)):
-        matched, greedy = expr.shift(string[i], True)
-        if matched == -1:
-            return i+1, i
-        elif matched > 0:
-            m_start = i-matched+2-greedy
-            return m_start, i+1-greedy
+    for i in xrange(start, len(string)-1):
+        matched, count = expr.shift(True, string[i], string[i+1])
+        if matched:
+            if count == 0:
+                return i+1, i
+            m_start = i-count+2
+            return m_start, i+1
+
+    i = len(string) - 1
+    matched, count = expr.shift(True, string[i])
+    if matched:
+        m_start = i-count+2
+        return m_start, i+1
+
     return -1, -1
 
 

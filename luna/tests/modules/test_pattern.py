@@ -77,11 +77,15 @@ class TestPattern(object):
         result = find(expr, 'aaaaaaaabacccca', 0)
         assert result == (1, 8)
 
-    def test_star_between_chart_star_between_charss(self):
+    def test_star_between_chars_star(self):
         expr = Sequence(Char('a'), Star(Char('b')))
         result = find(expr, 'acjjjabc', 0)
         assert result == (1, 1)
 
+    def test_star_between_chars_match_star(self):
+        expr = Sequence(Char('a'), Star(Char('b')))
+        result = find(expr, 'xaaaabbbbbcjjjabc', 0)
+        assert result == (2, 2)
 
     def test_single_char_build_expr(self):
         expr = build_expr('a', False)
