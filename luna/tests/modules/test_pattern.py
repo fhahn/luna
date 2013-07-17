@@ -125,3 +125,34 @@ class TestPattern(object):
     def test_escape_percent_build_expr(self):
         expr = build_expr('%%', False)
         assert expr.eq(Char('%'))
+
+    def test_build_expr_pattern_with_star(self):
+        expr = build_expr('a*', False)
+        assert expr.eq(Star(Char('a')))
+
+    def test_build_expr_pattern_with_star_2(self):
+        expr = build_expr('a*b*', False)
+        assert expr.eq(
+            Sequence(Star(Char('a')), Star(Char('b')))
+        )
+
+    def test_build_expr_pattern_with_star_3(self):
+        expr = build_expr('a*cb*', False)
+        assert expr.eq(
+            Sequence(
+                Sequence(Star(Char('a')), Char('c')),
+                Star(Char('b'))
+            )
+        )
+
+    def test_build_expr_pattern_with_star_4(self):
+        expr = build_expr('a.*c%a*', False)
+        assert expr.eq(
+            Sequence(
+                Sequence(
+                    Sequence(Char('a'), Star(Dot())),
+                    Char('c')
+                ),
+                Star(CharRange(ord('A'), ord('z')))
+            )
+        )

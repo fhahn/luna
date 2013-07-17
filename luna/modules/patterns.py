@@ -143,6 +143,7 @@ SPECIAL_CHARS = {
     'a': (ord('A'), ord('z'))
 }
 
+
 def build_expr(pattern, plain):
     expr = None
     seq = False
@@ -168,6 +169,10 @@ def build_expr(pattern, plain):
                 assert 0
         else:
             assert 0
+
+        if i+1 < len(pattern) and pattern[i+1] == '*':
+            new_expr = Star(new_expr)
+            i += 1
 
         if seq:
             expr = Sequence(expr, new_expr)
