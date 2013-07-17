@@ -20,6 +20,9 @@ class Pattern(object):
         self.matched = self._shift(mark, c1, c2)
         return self.matched
 
+    def eq(self, other):
+        return type(self) == type(other)
+
 
 class Sequence(Pattern):
     def __init__(self, left, right):
@@ -37,6 +40,19 @@ class Sequence(Pattern):
             return True, marked_left[1]
         return False, 0
 
+    def eq(self, other):
+        t_eq = Pattern.eq(self, other)
+        if self.left:
+            l_eq = t_eq and self.left.eq(other.left)
+        else:
+            l_eq = other.left is None
+        if self.right:
+            r_eq = t_eq and self.right.eq(other.right)
+        else:
+            r_eq = other.right is None
+
+        return t_eq and l_eq and r_eq
+
 
 class CharRange(Pattern):
     def __init__(self, start, stop):
@@ -49,6 +65,10 @@ class CharRange(Pattern):
             return True, 1
         else:
             return False, 0
+
+    def eq(self, other):
+        t_eq = Pattern.eq(self, other)
+        return t_eq and self.start == other.start and self.stop == other.stop
 
 
 class Char(CharRange):
@@ -65,14 +85,14 @@ class Dot(Pattern):
 
 
 class Star(Pattern):
-    def __init__(self, token):
+    def __init__(self, re):
         Pattern.__init__(self, True)
-        self.token = token
+        self.re = re
         self.num_matched = 0
 
     def _shift(self, mark, c1, c2):
-        matched = self.token.shift(mark, c1, c2)
-        next_matched = self.token.shift(mark, c2, c2)
+        matched = self.re.shift(mark, c1, c2)
+        next_matched = self.re.shift(mark, c2, c2)
         if self.num_matched == 0 and next_matched[0] == 0:
             return True, 0
         elif self.num_matched > 0 and next_matched[0] == 0:
@@ -82,6 +102,14 @@ class Star(Pattern):
         else:
             self.num_matched += 1
             return False, 0
+
+    def eq(self, other):
+        t_eq = Pattern.eq(self, other)
+        if self.re:
+            re_eq = t_eq and self.re.eq(other.re)
+        else:
+            re_eq = other.re is None
+        return t_eq and re_eq
 
 
 def find(expr, string, start):
@@ -140,6 +168,7 @@ def build_expr(pattern, plain):
                 assert 0
         else:
             assert 0
+
         if seq:
             expr = Sequence(expr, new_expr)
         else:

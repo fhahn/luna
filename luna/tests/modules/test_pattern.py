@@ -1,4 +1,6 @@
-from luna.modules.patterns import build_expr, find, Char, Sequence, Dot, CharRange, Star
+from luna.modules.patterns import (
+    build_expr, find, Char, Sequence, Dot, CharRange, Star
+)
 
 
 class TestPattern(object):
@@ -89,50 +91,37 @@ class TestPattern(object):
 
     def test_single_char_build_expr(self):
         expr = build_expr('a', False)
-        assert isinstance(expr, Char)
-        assert expr.start == ord('a')
+        assert expr.eq(Char('a'))
 
     def test_two_chars_build_expr(self):
         expr = build_expr('ab', False)
-        assert isinstance(expr, Sequence)
-        assert isinstance(expr.left, Char)
-        assert isinstance(expr.right, Char)
-        assert expr.left.start == ord('a')
-        assert expr.right.stop == ord('b')
+        assert expr.eq(Sequence(Char('a'), Char('b')))
 
     def test_three_chars_build_expr(self):
         expr = build_expr('abc', False)
-        assert isinstance(expr, Sequence)
-        assert isinstance(expr.left, Sequence)
-        assert isinstance(expr.left.left, Char)
-        assert isinstance(expr.left.right, Char)
-        assert isinstance(expr.right, Char)
-        assert expr.left.left.start == ord('a')
-        assert expr.left.right.start == ord('b')
-        assert expr.right.stop == ord('c')
+        assert expr.eq(Sequence(Sequence(Char('a'), Char('b')), Char('c')))
 
     def test_chars_and_dots_build_expr(self):
         expr = build_expr('a.c.', False)
-        assert isinstance(expr, Sequence)
-        assert isinstance(expr.left, Sequence)
-        assert isinstance(expr.left.left, Sequence)
-        assert isinstance(expr.left.left.left, Char)
-        assert expr.left.left.left.start == ord('a')
-        assert isinstance(expr.left.left.right, Dot)
-        assert isinstance(expr.left.right, Char)
-        assert expr.left.right.stop == ord('c')
-        assert isinstance(expr.right, Dot)
+        assert expr.eq(
+            Sequence(
+                Sequence(
+                    Sequence(Char('a'), Dot()),
+                    Char('c')
+                ),
+                Dot()
+            )
+        )
 
     def test_chars_and_special_a_build_expr(self):
         expr = build_expr('%aa%a', False)
-        assert isinstance(expr, Sequence)
-        assert isinstance(expr.left, Sequence)
-        assert isinstance(expr.left.left, CharRange)
-        assert isinstance(expr.left.right, Char)
-        assert expr.left.right.start == ord('a')
-        assert isinstance(expr.right, CharRange)
+        assert expr.eq(
+            Sequence(
+                Sequence(CharRange(ord('A'), ord('z')), Char('a')),
+                CharRange(ord('A'), ord('z'))
+            )
+        )
 
     def test_escape_percent_build_expr(self):
         expr = build_expr('%%', False)
-        assert isinstance(expr, Char)
-        assert expr.start == ord('%')
+        assert expr.eq(Char('%'))
