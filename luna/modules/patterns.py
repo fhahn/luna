@@ -42,16 +42,8 @@ class Sequence(Pattern):
 
     def eq(self, other):
         t_eq = Pattern.eq(self, other)
-        if self.left:
-            l_eq = t_eq and self.left.eq(other.left)
-        else:
-            l_eq = other.left is None
-        if self.right:
-            r_eq = t_eq and self.right.eq(other.right)
-        else:
-            r_eq = other.right is None
-
-        return t_eq and l_eq and r_eq
+        # left and right should never be None
+        return t_eq and self.left.eq(other.left) and self.right.eq(other.right)
 
 
 class CharRange(Pattern):
@@ -105,11 +97,8 @@ class Star(Pattern):
 
     def eq(self, other):
         t_eq = Pattern.eq(self, other)
-        if self.re:
-            re_eq = t_eq and self.re.eq(other.re)
-        else:
-            re_eq = other.re is None
-        return t_eq and re_eq
+        # re should never be None
+        return t_eq and self.re.eq(other.re)
 
 
 def find(expr, string, start):
