@@ -1,7 +1,8 @@
 from luna.modules.patterns import (
-    build_expr, find, Char, Sequence, Dot, CharRange, Star,
+    build_expr, Char, Sequence, Dot, CharRange, Star,
     StateMatch, StateOut, find2, StateSplit
 )
+
 
 class TestPattern2(object):
     def test_single_char_no_match(self):
@@ -33,6 +34,46 @@ class TestPattern2(object):
         expr = StateOut('a', StateOut('b', StateMatch()))
         result = find2(expr, 'baaaabbacaabbcc', 0)
         assert list(result) == [(5, 6), (11, 12)]
+
+    def test_three_chars_no_matches(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'ccababababababacccbaccabbbc', 0)
+        assert list(result) == [(-1, -1)]
+
+    def test_three_chars_one_match(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'ccabababccbababacccbaccabbbc', 0)
+        assert list(result) == [(7, 9)]
+
+    def test_three_chars_two_matches(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'babcccabababccbababacccbaccabbbc', 0)
+        assert list(result) == [(2, 4), (11, 13)]
+
+    def test_three_chars_one_matches_offset(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'abcjjjabc', 4)
+        assert list(result) == [(7, 9)]
+
+    def test_three_chars_negative_offset_no_match(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'abcjjjabc', -2)
+        assert list(result) == [(-1, -1)]
+
+    def test_three_chars_negative_offset_match(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'abcjjjabc', -3)
+        assert list(result) == [(7, 9)]
+
+    def test_three_chars_big_negative_offset_match(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'abcjjjabc', -100)
+        assert list(result) == [(1, 3), (7, 9)]
+
+    def test_three_chars_big_offset(self):
+        expr = StateOut('a', StateOut('b', StateOut('c', StateMatch())))
+        result = find2(expr, 'abcjjjabc', 100)
+        assert list(result) == [(-1, -1)]
 
     def test_star_1(self):
         expr = StateSplit(None, StateMatch())
@@ -73,61 +114,6 @@ class TestPattern2(object):
 
 
 class TestPattern(object):
-    def test_three_chars_no_matches(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'ccababababababacccbaccabbbc', 0)
-        assert list(result) == [(-1, -1)]
-
-    def test_three_chars_one_match(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'ccabababccbababacccbaccabbbc', 0)
-        assert list(result) == [(7, 9)]
-
-    def test_three_chars_one_matches_offset(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'abcjjjabc', 4)
-        assert list(result) == [(7, 9)]
-
-    def test_three_chars_negative_offset_no_match(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'abcjjjabc', -2)
-        assert list(result) == [(-1, -1)]
-
-    def test_three_chars_negative_offset_match(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'abcjjjabc', -3)
-        assert list(result) == [(7, 9)]
-
-    def test_three_chars_big_negative_offset_match(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'abcjjjabc', -100)
-        assert list(result) == [(1, 3), (7, 9)]
-
-    def test_three_chars_big_offset(self):
-        expr = Sequence(Sequence(Char('a'), Char('b')), Char('c'))
-        result = find(expr, 'abcjjjabc', 100)
-        assert list(result) == [(-1, -1)]
-
-    def test_star_1(self):
-        expr = Star(Char('c'))
-        result = find(expr, 'aaaabacccca', 0)
-        assert list(result) == [(1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 10), (11, 10)]
-
-    def test_star_2(self):
-        expr = Star(Char('a'))
-        result = find(expr, 'aaaaaaaabacbca', 0)
-        assert list(result) == [(1, 8), (9, 8), (10, 10), (11, 10), (12, 11), (13, 12), (14, 14)]
-
-    def test_star_between_chars_star(self):
-        expr = Sequence(Char('a'), Star(Char('b')))
-        result = find(expr, 'acjjjabc', 0)
-        assert list(result) == (1, 1)
-
-    def test_star_between_chars_match_star(self):
-        expr = Sequence(Char('a'), Star(Char('b')))
-        result = find(expr, 'xaabbbbbcjjjabc', 0)
-        assert list(result) == [(2, 2), (3, 8), (13, 14)]
-
     def test_single_char_build_expr(self):
         expr = build_expr('a', False)
         assert expr.eq(Char('a'))

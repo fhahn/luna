@@ -119,7 +119,7 @@ def find2(expr, string, start):
         start = int(start)
 
     found = False
-    i = 0
+    i = start
     while i < len(string):
         match = False
         valid = True
@@ -146,7 +146,6 @@ def find2(expr, string, start):
         if j == len(string):
             if (isinstance(state, StateSplit) and isinstance(state.out2, StateMatch)) or isinstance(state, StateMatch):
                 match = True
-
 
         if match:
             found = True
