@@ -6,12 +6,17 @@ http://swtch.com/~rsc/regexp/regexp1.html
 """
 
 
-class StateMatch(object):
+ 
+class State(object):
+    pass
+
+
+class StateMatch(State):
     def __init__(self):
         pass
 
 
-class StateCharRange(object):
+class StateCharRange(State):
     def __init__(self, c1, c2, out):
         self.start = ord(c1)
         self.stop = ord(c2)
@@ -33,7 +38,7 @@ class StateDot(StateCharRange):
         return True
 
 
-class StateSplit(object):
+class StateSplit(State):
     def __init__(self, out, out2):
         self.out = out
         self.out2 = out2
@@ -115,8 +120,9 @@ def build_expr(pattern, plain):
     prev = None
     start = expr
     i = 0
-    prev = [expr,]
+    prev = expr
  
+    assert isinstance(pattern, str)
     while i < len(pattern):
         c = pattern[i]
         if c == '.':
