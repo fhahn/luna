@@ -2,7 +2,7 @@
 """
 from luna.w_objects import W_Pri, W_Num, W_Str
 from luna.module import ModuleDef
-from luna.modules.patterns import find, build_expr
+from luna.modules.patterns import find2, build_expr
 
 
 StringModule = ModuleDef('string')
@@ -26,7 +26,7 @@ def handle_args(args):
 @StringModule.function('find')
 def method_find(args):
     s, expr, start, plain = handle_args(args)
-    matches = find(expr, s, start)
+    matches = next(find2(expr, s, start))
     if matches == (-1, -1):
         return [W_Pri(0)]
     else:
@@ -36,7 +36,7 @@ def method_find(args):
 @StringModule.function('match')
 def method_match(args):
     s, expr, start, plain = handle_args(args)
-    start_i, stop_i = find(expr, s, start)
+    start_i, stop_i = next(find2(expr, s, start))
     if (start_i, stop_i) == (-1, -1):
         return [W_Pri(0)]
     else:
