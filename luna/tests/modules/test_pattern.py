@@ -1,6 +1,5 @@
 from luna.modules.patterns import (
-    build_expr, Char, Sequence, Dot, CharRange, Star,
-    StateMatch, StateChar, find2, StateSplit, StateDot, StateCharRange
+    StateMatch, StateChar, find2, StateSplit, StateDot, StateCharRange, build_expr
 )
 
 
