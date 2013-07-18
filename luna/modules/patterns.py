@@ -85,21 +85,31 @@ class Dot(Pattern):
         return mark, 1
 
 
-
-
-
 class StateMatch(object):
     def __init__(self):
         pass
 
 
-class StateOut(object):
-    def __init__(self, c, out):
-        self.c = c
+class StateCharRange(object):
+    def __init__(self, c1, c2, out):
+        self.start = ord(c1)
+        self.stop = ord(c2)
         self.out = out
 
     def match(self, c):
-        return self.c == c
+        return self.start >= ord(c) and self.stop <= ord(c)
+
+
+class StateChar(StateCharRange):
+    def __init__(self, c, out):
+        StateCharRange.__init__(self, c, c, out)
+
+class StateDot(StateCharRange):
+    def __init__(self, out):
+        StateCharRange.__init__(self, ' ', ' ' , out)
+
+    def match(self, c):
+        return True
 
 
 class StateSplit(object):
@@ -127,7 +137,7 @@ def find2(expr, string, start):
         state = expr
         backtrack = []
         while valid and not match and j < len(string):
-            if isinstance(state, StateOut):
+            if isinstance(state, StateCharRange):
                 if not state.match(string[j]):
                     if len(backtrack) == 0:
                         valid = False
@@ -248,45 +258,66 @@ def find(expr, string, start):
 
 
 SPECIAL_CHARS = {
-    'a': (ord('A'), ord('z'))
+    'a': ('A', 'z')
 }
+
+
+def set_next(state, next_state):
+    if isinstance(state, StateSplit):
+        if state.out is None:
+            state.out = next_state
+        else:
+            state.out2 = next_state
+    else:
+        state.out = next_state
 
 
 def build_expr(pattern, plain):
     expr = None
-    seq = False
     if plain:
         raise RuntimeError('Plain not implemented at the moment')
 
-    new_expr = None
+    expr = StateChar('c', None)
+    prev = None
+    start = expr
     i = 0
+    prev = [expr,]
+ 
     while i < len(pattern):
         c = pattern[i]
         if c == '.':
-            new_expr = Dot()
+            new_expr = StateDot(None)
+            set_next(expr, new_expr)
+            path = 1
         elif ord(c) >= ord('0') and ord(c) <= ord('z'):
-            new_expr = Char(c)
+            new_expr = StateChar(c, None)
+            set_next(expr, new_expr)
+            path = 1
         elif c == '%':
             i += 1
             c = pattern[i]
             if c == '%':
-                new_expr = Char('%')
+                new_expr = StateChar('%', None)
+                expr.out = new_expr
             elif c in SPECIAL_CHARS:
-                new_expr = CharRange(*SPECIAL_CHARS[c])
+                new_expr = StateCharRange(SPECIAL_CHARS[c][0], SPECIAL_CHARS[c][1], None)
+                expr.out = new_expr
             else:
                 assert 0
+            set_next(expr, new_expr)
+            path = 1
+        elif c == '*':
+            new_expr = StateSplit(expr, None)
+            set_next(prev, new_expr)
+            set_next(expr, new_expr)
+            path = 2
+            prev_path = 2
         else:
             assert 0
-
-        if i+1 < len(pattern) and pattern[i+1] == '*':
-            new_expr = Star(new_expr)
-            i += 1
-
-        if seq:
-            expr = Sequence(expr, new_expr)
-        else:
-            expr = new_expr
-        seq = True
+        prev = expr
+        expr = new_expr
         i += 1
 
-    return expr
+    set_next(expr, StateMatch())
+
+    return start.out
