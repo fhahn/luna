@@ -6,7 +6,6 @@ http://swtch.com/~rsc/regexp/regexp1.html
 """
 
 
- 
 class State(object):
     pass
 
@@ -23,16 +22,17 @@ class StateCharRange(State):
         self.out = out
 
     def match(self, c):
-        return ord(c) >= self.start and  ord(c) <=self.stop
+        return ord(c) >= self.start and ord(c) <= self.stop
 
 
 class StateChar(StateCharRange):
     def __init__(self, c, out):
         StateCharRange.__init__(self, c, c, out)
 
+
 class StateDot(StateCharRange):
     def __init__(self, out):
-        StateCharRange.__init__(self, ' ', ' ' , out)
+        StateCharRange.__init__(self, ' ', ' ', out)
 
     def match(self, c):
         return True
@@ -77,10 +77,12 @@ def find2(expr, string, start):
             elif isinstance(state, StateSplit):
                 backtrack.append((state.out2, j))
                 state = state.out
-            else: 
+            else:
                 valid = False
         if j == len(string):
-            if (isinstance(state, StateSplit) and isinstance(state.out2, StateMatch)) or isinstance(state, StateMatch):
+            if (isinstance(state, StateMatch) or
+                    (isinstance(state, StateSplit) and
+                        isinstance(state.out2, StateMatch))):
                 match = True
 
         if match:
@@ -121,18 +123,16 @@ def build_expr(pattern, plain):
     start = expr
     i = 0
     prev = expr
- 
+
     assert isinstance(pattern, str)
     while i < len(pattern):
         c = pattern[i]
         if c == '.':
             new_expr = StateDot(None)
             set_next(expr, new_expr)
-            path = 1
         elif ord(c) >= ord('0') and ord(c) <= ord('z'):
             new_expr = StateChar(c, None)
             set_next(expr, new_expr)
-            path = 1
         elif c == '%':
             i += 1
             c = pattern[i]
@@ -140,18 +140,17 @@ def build_expr(pattern, plain):
                 new_expr = StateChar('%', None)
                 expr.out = new_expr
             elif c in SPECIAL_CHARS:
-                new_expr = StateCharRange(SPECIAL_CHARS[c][0], SPECIAL_CHARS[c][1], None)
+                new_expr = StateCharRange(
+                    SPECIAL_CHARS[c][0], SPECIAL_CHARS[c][1], None
+                )
                 expr.out = new_expr
             else:
                 assert 0
             set_next(expr, new_expr)
-            path = 1
         elif c == '*':
             new_expr = StateSplit(expr, None)
             set_next(prev, new_expr)
             set_next(expr, new_expr)
-            path = 2
-            prev_path = 2
         else:
             assert 0
         prev = expr
