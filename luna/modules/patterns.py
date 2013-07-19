@@ -103,27 +103,35 @@ SPECIAL_CHARS = {
 }
 
 
-def set_next(state, next_state):
+def set_next(state, next_state, propagate=False):
     if isinstance(state, StateSplit):
         if state.out is None:
             state.out = next_state
-        else:
+        elif state.out2 is None:
             state.out2 = next_state
+        elif propagate:
+                set_next(state.out, next_state)
+                set_next(state.out2, next_state)
     else:
-        state.out = next_state
+        if state.out is None:
+            state.out = next_state
+        elif propagate:
+            set_next(state.out, next_state)
 
 
 T_CHAR = 0
 T_DOT = 1
 T_CHAR_RANGE = 2
 T_STAR = 3
+T_OR = 4
 
 
 class Token(object):
-    def __init__(self, t_type, value, sub_tokens=[]):
+    def __init__(self, t_type, value, sub_tokens=[], tokens_right=[]):
         self.type = t_type
         self.value = value
         self.sub_tokens = sub_tokens
+        self.tokens_right = tokens_right
 
 
 def tokenize(pattern):
@@ -155,13 +163,18 @@ def tokenize(pattern):
                 tokens.append(Token(T_STAR, [], sub_tokens=[prev]))
             else:
                 raise RuntimeError('Invalid pattern')
+        elif c == '|':
+            tokens_right = tokenize(pattern[i+1:])
+            return [
+                Token(T_OR, [], sub_tokens=tokens, tokens_right=tokens_right)
+            ]
         else:
             raise RuntimeError('Invalid pattern')
         i += 1
     return tokens
 
 
-def tokens_to_expression(tokens):
+def tokens_to_expression(tokens, top=True):
     expr = StateChar('c', None)
     start = expr
     for t in tokens:
@@ -173,12 +186,17 @@ def tokens_to_expression(tokens):
         elif t.type == T_CHAR_RANGE:
             new_expr = StateCharRange(t.value[0], t.value[1], None)
         elif t.type == T_STAR:
-            match_expr = tokens_to_expression(t.sub_tokens)
+            match_expr = tokens_to_expression(t.sub_tokens, top=False)
             new_expr = StateSplit(match_expr, None)
             set_next(match_expr, new_expr)
+        elif t.type == T_OR:
+            expr_left = tokens_to_expression(t.sub_tokens, top=False)
+            expr_right = tokens_to_expression(t.tokens_right, top=False)
+            new_expr = StateSplit(expr_left, expr_right)
         set_next(expr, new_expr)
         expr = new_expr
-    set_next(expr, StateMatch())
+    if top:
+        set_next(expr, StateMatch(), propagate=True)
     return start.out
 
 

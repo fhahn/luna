@@ -231,6 +231,25 @@ class TestPattern2(object):
         node = node.out2
         assert isinstance(node, StateMatch)
 
+    def test_build_expr_simple_or(self):
+        expr = compile_re('a|b', False)
+
+        # |
+        assert isinstance(expr, StateSplit)
+
+        # a
+        node = expr.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+        assert isinstance(node.out, StateMatch)
+
+        # b
+        node = expr.out2
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        assert isinstance(node.out, StateMatch)
+
+
     def test_build_expr_misplaced_star(self):
         with pytest.raises(RuntimeError):
             compile_re('*')
