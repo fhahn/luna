@@ -2,7 +2,7 @@
 """
 from luna.w_objects import W_Pri, W_Num, W_Str
 from luna.module import ModuleDef
-from luna.modules.patterns import find2, build_expr
+from luna.modules.patterns import find2, compile_re
 
 
 StringModule = ModuleDef('string')
@@ -12,7 +12,7 @@ def handle_args(args):
     s = args[0].s_val
     start = 0
     plain = False
-    expr = build_expr(args[1].s_val, plain)
+    expr = compile_re(args[1].s_val, plain)
 
     if len(args) > 2:
         start = args[2].n_val - 1

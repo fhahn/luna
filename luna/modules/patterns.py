@@ -113,50 +113,75 @@ def set_next(state, next_state):
         state.out = next_state
 
 
-def build_expr(pattern, plain):
-    expr = None
-    if plain:
-        raise RuntimeError('Plain not implemented at the moment')
+T_CHAR = 0
+T_DOT = 1
+T_CHAR_RANGE = 2
+T_STAR = 3
 
-    expr = StateChar('c', None)
-    prev = None
-    start = expr
+
+class Token(object):
+    def __init__(self, t_type, value, sub_tokens=[]):
+        self.type = t_type
+        self.value = value
+        self.sub_tokens = sub_tokens
+
+
+def tokenize(pattern):
+    tokens = []
+
     i = 0
-    prev = expr
-
-    assert isinstance(pattern, str)
     while i < len(pattern):
         c = pattern[i]
-        if c == '.':
-            new_expr = StateDot(None)
-            set_next(expr, new_expr)
-        elif ord(c) >= ord('0') and ord(c) <= ord('z'):
-            new_expr = StateChar(c, None)
-            set_next(expr, new_expr)
+        if ord(c) >= ord('0') and ord(c) <= ord('z'):
+            tokens.append(Token(T_CHAR, [c]))
+        elif c == '.':
+            tokens.append(Token(T_DOT, [c]))
         elif c == '%':
-            i += 1
-            c = pattern[i]
-            if c == '%':
-                new_expr = StateChar('%', None)
-                expr.out = new_expr
-            elif c in SPECIAL_CHARS:
-                new_expr = StateCharRange(
-                    SPECIAL_CHARS[c][0], SPECIAL_CHARS[c][1], None
-                )
-                expr.out = new_expr
+            if i+1 < len(pattern):
+                if pattern[i+1] == '%':
+                    tokens.append(Token(T_CHAR, ['%']))
+                elif pattern[i+1] in SPECIAL_CHARS:
+                    tokens.append(
+                        Token(T_CHAR_RANGE, list(SPECIAL_CHARS[pattern[i+1]]))
+                    )
+                else:
+                    raise RuntimeError('Invalid pattern')
+                i += 1
             else:
-                assert 0
-            set_next(expr, new_expr)
+                raise RuntimeError('Invalid pattern')
         elif c == '*':
-            new_expr = StateSplit(expr, None)
-            set_next(prev, new_expr)
-            set_next(expr, new_expr)
+            if len(tokens) > 0:
+                prev = tokens.pop()
+                tokens.append(Token(T_STAR, [], sub_tokens=[prev]))
+            else:
+                raise RuntimeError('Invalid pattern')
         else:
-            assert 0
-        prev = expr
-        expr = new_expr
+            raise RuntimeError('Invalid pattern')
         i += 1
+    return tokens
 
+
+def tokens_to_expression(tokens):
+    expr = StateChar('c', None)
+    start = expr
+    for t in tokens:
+        new_expr = None
+        if t.type == T_CHAR:
+            new_expr = StateChar(t.value[0], None)
+        elif t.type == T_DOT:
+            new_expr = StateDot(None)
+        elif t.type == T_CHAR_RANGE:
+            new_expr = StateCharRange(t.value[0], t.value[1], None)
+        elif t.type == T_STAR:
+            match_expr = tokens_to_expression(t.sub_tokens)
+            new_expr = StateSplit(match_expr, None)
+            set_next(match_expr, new_expr)
+        set_next(expr, new_expr)
+        expr = new_expr
     set_next(expr, StateMatch())
-
     return start.out
+
+
+def compile_re(pattern, plain=False):
+    tokens = tokenize(pattern)
+    return tokens_to_expression(tokens)

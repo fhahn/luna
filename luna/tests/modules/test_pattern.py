@@ -1,5 +1,6 @@
 from luna.modules.patterns import (
-    StateMatch, StateChar, find2, StateSplit, StateDot, StateCharRange, build_expr
+    StateMatch, StateChar, find2, StateSplit, StateDot, StateCharRange,
+    compile_re
 )
 
 
@@ -78,13 +79,18 @@ class TestPattern2(object):
         expr = StateSplit(None, StateMatch())
         expr.out = StateChar('c', expr)
         result = find2(expr, 'aaaabacccca', 0)
-        assert list(result) == [(1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 10), (11, 10)]
+        assert list(result) == [
+            (1, 0), (2, 1), (3, 2), (4, 3), (5, 4), (6, 5), (7, 10),
+            (11, 10)
+        ]
 
     def test_star_2(self):
         expr = StateSplit(None, StateMatch())
         expr.out = StateChar('a', expr)
         result = find2(expr, 'aaaaaaaabacbca', 0)
-        assert list(result) == [(1, 8), (9, 8), (10, 10), (11, 10), (12, 11), (13, 12), (14, 14)]
+        assert list(result) == [
+            (1, 8), (9, 8), (10, 10), (11, 10), (12, 11), (13, 12), (14, 14)
+        ]
 
     def test_star_between_chars_star_match_end(self):
         star = StateSplit(None, StateMatch())
@@ -108,29 +114,29 @@ class TestPattern2(object):
         assert list(result) == [(3, 9), (13, 15), (20, 21)]
 
     def test_single_char_build_expr(self):
-        expr = build_expr('a', False)
+        expr = compile_re('a')
         assert isinstance(expr, StateChar)
         assert expr.start == ord('a')
         assert expr.stop == ord('a')
 
     def test_two_chars_build_expr(self):
-        expr = build_expr('ab', False)
+        expr = compile_re('ab')
         assert isinstance(expr, StateChar)
         assert expr.start == ord('a')
         assert isinstance(expr.out, StateChar)
         assert expr.out.start == ord('b')
 
     def test_three_chars_build_expr(self):
-        expr = build_expr('abc', False)
+        expr = compile_re('abc')
         assert isinstance(expr, StateChar)
         assert expr.start == ord('a')
         assert isinstance(expr.out, StateChar)
         assert expr.out.start == ord('b')
         assert isinstance(expr.out.out, StateChar)
         assert expr.out.out.start == ord('c')
- 
+
     def test_chars_and_dots_build_expr(self):
-        expr = build_expr('a.c.', False)
+        expr = compile_re('a.c.', False)
         assert isinstance(expr, StateChar)
         assert expr.start == ord('a')
         assert isinstance(expr.out, StateDot)
@@ -140,7 +146,7 @@ class TestPattern2(object):
         assert isinstance(expr.out.out.out.out, StateMatch)
 
     def test_chars_and_special_a_build_expr(self):
-        expr = build_expr('%aa%a', False)
+        expr = compile_re('%aa%a', False)
         assert isinstance(expr, StateCharRange)
         assert expr.start == ord('A')
         assert expr.stop == ord('z')
@@ -152,13 +158,13 @@ class TestPattern2(object):
         assert isinstance(expr.out.out.out, StateMatch)
 
     def test_escape_percent_build_expr(self):
-        expr = build_expr('%%', False)
+        expr = compile_re('%%', False)
         assert isinstance(expr, StateChar)
         assert expr.start == ord('%')
         assert isinstance(expr.out, StateMatch)
 
     def test_build_expr_pattern_with_star(self):
-        expr = build_expr('a*', False)
+        expr = compile_re('a*', False)
         assert isinstance(expr, StateSplit)
         assert isinstance(expr.out, StateChar)
         assert expr.out.out == expr
@@ -166,7 +172,7 @@ class TestPattern2(object):
         assert isinstance(expr.out2, StateMatch)
 
     def test_build_expr_pattern_with_star_2(self):
-        expr = build_expr('a*b*', False)
+        expr = compile_re('a*b*', False)
         assert isinstance(expr, StateSplit)
         assert isinstance(expr.out, StateChar)
         assert expr.out.out == expr
@@ -178,7 +184,7 @@ class TestPattern2(object):
         assert isinstance(expr.out2.out2, StateMatch)
 
     def test_build_expr_pattern_with_star_3(self):
-        expr = build_expr('a*cb*', False)
+        expr = compile_re('a*cb*', False)
         assert isinstance(expr, StateSplit)
         assert isinstance(expr.out, StateChar)
         assert expr.out.out == expr
@@ -194,9 +200,31 @@ class TestPattern2(object):
         assert isinstance(expr.out2.out.out2, StateMatch)
 
     def test_build_expr_pattern_with_star_4(self):
-        expr = build_expr('a.*c%a*', False)
+        expr = compile_re('a.*c%a*', False)
+
+        # a
         assert isinstance(expr, StateChar)
         assert expr.start == ord('a')
 
-        assert isinstance(expr.out, StateSplit)
-        # TODO Finish test case
+        # .*
+        node = expr.out
+        assert isinstance(node, StateSplit)
+        assert isinstance(node.out, StateDot)
+        assert node.out.out == node
+
+        # c
+        node = node.out2
+        assert isinstance(node, StateChar)
+        assert node.start == ord('c')
+
+        # %a*
+        node = node.out
+        assert isinstance(node, StateSplit)
+        assert isinstance(node.out, StateCharRange)
+        assert node.out.start == ord('A')
+        assert node.out.stop == ord('z')
+        assert node.out.out == node
+
+        # match
+        node = node.out2
+        assert isinstance(node, StateMatch)
