@@ -1,3 +1,5 @@
+import pytest
+
 from luna.modules.patterns import (
     StateMatch, StateChar, find2, StateSplit, StateDot, StateCharRange,
     compile_re
@@ -228,3 +230,24 @@ class TestPattern2(object):
         # match
         node = node.out2
         assert isinstance(node, StateMatch)
+
+    def test_build_expr_misplaced_star(self):
+        with pytest.raises(RuntimeError):
+            compile_re('*')
+
+    def test_build_expr_invalid_special_char(self):
+        with pytest.raises(RuntimeError):
+            compile_re('%,')
+
+    def test_build_expr_misplaced_percent_1(self):
+        with pytest.raises(RuntimeError):
+            compile_re('%')
+
+    def test_build_expr_misplaced_percent_2(self):
+        with pytest.raises(RuntimeError):
+            compile_re('a%%%')
+
+    def test_build_expr_misplaced_percent_3(self):
+        with pytest.raises(RuntimeError):
+            compile_re('a%')
+
