@@ -110,13 +110,13 @@ def set_next(state, next_state, propagate=False):
         elif state.out2 is None:
             state.out2 = next_state
         elif propagate:
-                set_next(state.out, next_state)
-                set_next(state.out2, next_state)
+                set_next(state.out, next_state, propagate=propagate)
+                set_next(state.out2, next_state, propagate=propagate)
     else:
         if state.out is None:
             state.out = next_state
         elif propagate:
-            set_next(state.out, next_state)
+            set_next(state.out, next_state, propagate=propagate)
 
 
 T_CHAR = 0
@@ -124,6 +124,7 @@ T_DOT = 1
 T_CHAR_RANGE = 2
 T_STAR = 3
 T_OR = 4
+T_GROUP = 5
 
 
 class Token(object):
@@ -132,12 +133,14 @@ class Token(object):
         self.value = value
         self.sub_tokens = sub_tokens
         self.tokens_right = tokens_right
+        self.prop = False
 
 
 def tokenize(pattern):
     tokens = []
 
     i = 0
+    prop = False
     while i < len(pattern):
         c = pattern[i]
         if ord(c) >= ord('0') and ord(c) <= ord('z'):
@@ -168,9 +171,26 @@ def tokenize(pattern):
             return [
                 Token(T_OR, [], sub_tokens=tokens, tokens_right=tokens_right)
             ]
+        elif c == '(':
+            i_g = i + 1
+            open_count = 1
+            close_count = 0
+            while open_count > close_count and i_g < len(pattern):
+                if pattern[i_g] == '(':
+                    open_count += 1
+                elif pattern[i_g] == ')':
+                    close_count += 1
+                i_g += 1
+            group_str = pattern[(i+1):(i_g-1)]
+            tokens.append(Token(T_GROUP, [], sub_tokens=tokenize(group_str)))
+            i += len(group_str) + 2
+            # Force propagation of next state after group
+            prop  = True
+            continue
         else:
             raise RuntimeError('Invalid pattern')
         i += 1
+        tokens[-1].prop = prop
     return tokens
 
 
@@ -188,12 +208,17 @@ def tokens_to_expression(tokens, top=True):
         elif t.type == T_STAR:
             match_expr = tokens_to_expression(t.sub_tokens, top=False)
             new_expr = StateSplit(match_expr, None)
-            set_next(match_expr, new_expr)
+            set_next(match_expr, new_expr, propagate=True)
         elif t.type == T_OR:
             expr_left = tokens_to_expression(t.sub_tokens, top=False)
             expr_right = tokens_to_expression(t.tokens_right, top=False)
             new_expr = StateSplit(expr_left, expr_right)
-        set_next(expr, new_expr)
+        elif t.type == T_GROUP:
+            new_expr = tokens_to_expression(t.sub_tokens, top=False)
+            set_next(expr, new_expr, propagate=True)
+        else:
+            raise RuntimeError('Invalid pattern')
+        set_next(expr, new_expr, propagate=t.prop)
         expr = new_expr
     if top:
         set_next(expr, StateMatch(), propagate=True)

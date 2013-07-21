@@ -115,6 +115,53 @@ class TestPattern2(object):
         result = find2(expr, 'xaabbbbbcjjjabcxalcac', 0)
         assert list(result) == [(3, 9), (13, 15), (20, 21)]
 
+    def test_simple_or(self):
+        expr = compile_re('(aa|bb)')
+        result = find2(expr, 'xyzabbaab', 0)
+        assert list(result) == [(5, 6), (7, 8)]
+
+    def test_grouped_or_between_chars(self):
+        expr = compile_re('x(aa|bb)x')
+        result = find2(expr, 'axaaxaxbxbbxa', 0)
+        assert list(result) == [(2, 5), (9, 12)]
+
+    def test_chained_grouped_or_match(self):
+        expr = compile_re('x(aa|bb)(cc|dd)x')
+        result = find2(expr, 'axaaddaxbbccxxaacx', 0)
+        assert list(result) == [(8, 13)]
+
+    def test_chained_grouped_or_no_match(self):
+        expr = compile_re('x(aa|bb)(cc|dd)x')
+        result = find2(expr, 'xaaccddxxaaddddxxaacc', 0)
+        assert list(result) == [(-1, -1)]
+
+    def test_grouped_star(self):
+        expr = compile_re('(ab)*')
+        result = find2(expr, 'ababababab', 0)
+        assert list(result) == [(1, 10)]
+
+    def test_grouped_star_between_chars_match(self):
+        expr = compile_re('x(ab)*x')
+        result = find2(expr, 'ababxababxabab', 0)
+        assert list(result) == [(5, 10)]
+
+    def test_grouped_star_between_chars_no_match(self):
+        expr = compile_re('x(ab)*x')
+        result = find2(expr, 'ababxabababab', 0)
+        assert list(result) == [(-1, -1)]
+
+    def test_grouped_star_and_or_match(self):
+        expr = compile_re('x((aa)*|(bb)*)x')
+        result = find2(expr, 'xaaaaaaxxx', 0)
+        assert list(result) == [(1, 8), (9, 10)]
+
+    def test_grouped_star_and_or_no_match(self):
+        expr = compile_re('x((aa)*|(bb)*)x')
+        result = find2(expr, 'xaaaaaxbxabxbbbb', 0)
+        assert list(result) == [(-1, -1)]
+
+
+
     def test_single_char_build_expr(self):
         expr = compile_re('a')
         assert isinstance(expr, StateChar)
@@ -249,6 +296,113 @@ class TestPattern2(object):
         assert node.stop == ord('b')
         assert isinstance(node.out, StateMatch)
 
+    def test_build_group_star(self):
+        expr = compile_re('(ab)*', False)
+
+        # *
+        assert isinstance(expr, StateSplit)
+
+        # a
+        node = expr.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+
+        # b
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        assert node.out == expr
+
+        # match
+        assert isinstance(expr.out2, StateMatch)
+
+    def test_build_group_star_chained(self):
+        expr = compile_re('(ab)*ab', False)
+
+        # *
+        assert isinstance(expr, StateSplit)
+
+        # a
+        node = expr.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+
+        # b
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        assert node.out == expr
+
+        # ab
+        node = expr.out2
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+
+        # b
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+
+        # match
+        assert isinstance(node.out, StateMatch)
+
+    def test_build_group_or(self):
+        expr = compile_re('(aa|bb)', False)
+
+        # |
+        assert isinstance(expr, StateSplit)
+
+        # aa
+        node = expr.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+        assert isinstance(node.out, StateMatch)
+
+        # bb
+        node = expr.out2
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        assert isinstance(node.out, StateMatch)
+
+    def test_build_group_or_between_chars(self):
+        expr = compile_re('x(aa|bb)x')
+        # xaax
+        assert isinstance(expr, StateChar)
+        assert expr.start == ord('x')
+
+        # |
+        node = expr.out
+        assert isinstance(node, StateSplit)
+
+        # aax
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('a')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('x')
+        assert isinstance(node.out, StateMatch)
+
+        # bbx
+        node = expr.out.out2
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('b')
+        node = node.out
+        assert isinstance(node, StateChar)
+        assert node.stop == ord('x')
+        assert isinstance(node.out, StateMatch)
 
     def test_build_expr_misplaced_star(self):
         with pytest.raises(RuntimeError):
@@ -269,4 +423,3 @@ class TestPattern2(object):
     def test_build_expr_misplaced_percent_3(self):
         with pytest.raises(RuntimeError):
             compile_re('a%')
-
