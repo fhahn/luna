@@ -160,7 +160,13 @@ class TestPattern2(object):
         result = find2(expr, 'xaaaaaxbxabxbbbb', 0)
         assert list(result) == [(-1, -1)]
 
-
+    def test_or_repetition(self):
+        """
+        expr = compile_re('(aa|bb){2}')
+        result = find2(expr, 'xabbxaaaaxjkbbajbbaal', 0)
+        assert list(result) == [(6, 9), (17, 20)]
+        """
+        pass
 
     def test_single_char_build_expr(self):
         expr = compile_re('a')
@@ -404,6 +410,15 @@ class TestPattern2(object):
         assert node.stop == ord('x')
         assert isinstance(node.out, StateMatch)
 
+    def test_build_expr_with_repitition(self):
+        expr = compile_re('a{3}')
+
+        assert isinstance(expr, StateChar)
+        assert isinstance(expr.out, StateChar)
+        assert isinstance(expr.out.out, StateChar)
+        assert isinstance(expr.out.out.out, StateMatch)
+
+
     def test_build_expr_misplaced_star(self):
         with pytest.raises(RuntimeError):
             compile_re('*')
@@ -423,3 +438,5 @@ class TestPattern2(object):
     def test_build_expr_misplaced_percent_3(self):
         with pytest.raises(RuntimeError):
             compile_re('a%')
+
+

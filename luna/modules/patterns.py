@@ -128,12 +128,21 @@ T_GROUP = 5
 
 
 class Token(object):
-    def __init__(self, t_type, value, sub_tokens=[], tokens_right=[]):
+    def __init__(self, t_type, value, sub_tokens=[], tokens_right=[],
+                 prop=False):
         self.type = t_type
         self.value = value
         self.sub_tokens = sub_tokens
         self.tokens_right = tokens_right
-        self.prop = False
+        self.prop = prop
+
+    def clone(self):
+        cloned_sub = [t.clone() for t in self.sub_tokens]
+        cloned_right = [t.clone() for t in self.tokens_right]
+        return Token(
+            self.type, self.value, sub_tokens=cloned_sub,
+            tokens_right=cloned_right, prop=self.prop
+        )
 
 
 def tokenize(pattern):
@@ -187,8 +196,15 @@ def tokenize(pattern):
             tokens.append(Token(T_GROUP, [], sub_tokens=tokenize(group_str)))
             i += len(group_str) + 2
             # Force propagation of next state after group
-            prop  = True
+            prop = True
             continue
+        elif c == '{':
+            count_str = pattern[i+1:].split('}', 1)[0]
+            count = int(count_str)
+            prev = tokens.pop()
+            for j in range(0, count):
+                tokens.append(prev.clone())
+            i += len(count_str) + 1
         else:
             raise RuntimeError('Invalid pattern')
         i += 1
