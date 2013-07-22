@@ -181,7 +181,9 @@ def tokenize(pattern):
                 elif pattern[i_g] == ')':
                     close_count += 1
                 i_g += 1
-            group_str = pattern[(i+1):(i_g-1)]
+            end = i_g - 1
+            assert end >= 0
+            group_str = pattern[(i+1):end]
             tokens.append(Token(T_GROUP, [], sub_tokens=tokenize(group_str)))
             i += len(group_str) + 2
             # Force propagation of next state after group
