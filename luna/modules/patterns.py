@@ -62,7 +62,9 @@ def find2(expr, string, start):
         j = i
         state = expr
         backtrack = []
-        while valid and not match and j < len(string):
+        while valid and not match and (j < len(string) or len(backtrack) > 0):
+            if j >= len(string) and len(backtrack) > 0:
+                state, j = backtrack.pop()
             if isinstance(state, StateCharRange):
                 if not state.match(string[j]):
                     if len(backtrack) == 0:
@@ -79,12 +81,11 @@ def find2(expr, string, start):
                 state = state.out
             else:
                 valid = False
-        if j == len(string):
-            if (isinstance(state, StateMatch) or
-                    (isinstance(state, StateSplit) and
-                        isinstance(state.out2, StateMatch))):
-                match = True
-
+            if j == len(string):
+                if (isinstance(state, StateMatch) or
+                        (isinstance(state, StateSplit) and
+                            isinstance(state.out2, StateMatch))):
+                    match = True
         if match:
             found = True
             yield (i+1, j)

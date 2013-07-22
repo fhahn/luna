@@ -165,6 +165,16 @@ class TestPattern2(object):
         result = find2(expr, 'xabbxaaaaxjkbbajbbaal', 0)
         assert list(result) == [(6, 9), (17, 20)]
 
+    def test_match_evil(self):
+        expr = compile_re('(a|b)*a(a|b){5}a(a|b)*')
+        result = find2(expr, 'aaaababababba', 0)
+        assert list(result) == [(1, 13)]
+
+    def test_match_evil_no_match(self):
+        expr = compile_re('(a|b)*a(a|b){5}a(a|b)*')
+        result = find2(expr, 'aaaaaaxbbbbaaaaabbbbbbb', 0)
+        assert list(result) == [(-1, -1)]
+
     def test_single_char_build_expr(self):
         expr = compile_re('a')
         assert isinstance(expr, StateChar)
