@@ -110,13 +110,16 @@ def set_next(state, next_state, propagate=False):
         elif state.out2 is None:
             state.out2 = next_state
         elif propagate:
+            if state.out != next_state:
                 set_next(state.out, next_state, propagate=propagate)
+            if state.out2 != next_state:
                 set_next(state.out2, next_state, propagate=propagate)
     else:
         if state.out is None:
             state.out = next_state
         elif propagate:
-            set_next(state.out, next_state, propagate=propagate)
+            if state.out != next_state:
+                set_next(state.out, next_state, propagate=propagate)
 
 
 T_CHAR = 0

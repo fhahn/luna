@@ -161,12 +161,9 @@ class TestPattern2(object):
         assert list(result) == [(-1, -1)]
 
     def test_or_repetition(self):
-        """
         expr = compile_re('(aa|bb){2}')
         result = find2(expr, 'xabbxaaaaxjkbbajbbaal', 0)
         assert list(result) == [(6, 9), (17, 20)]
-        """
-        pass
 
     def test_single_char_build_expr(self):
         expr = compile_re('a')
