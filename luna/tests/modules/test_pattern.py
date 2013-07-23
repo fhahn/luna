@@ -160,6 +160,17 @@ class TestPattern2(object):
         result = find2(expr, 'xaaaaaxbxabxbbbb', 0)
         assert list(result) == [(-1, -1)]
 
+    def test_simple_plus(self):
+        expr = compile_re('a+')
+        result = find2(expr, 'bxaaaabak', 0)
+        assert list(result) == [(3, 6), (8, 8)]
+
+    def test_grouped_plus(self):
+        expr = compile_re('(a|b)+c')
+        result = find2(expr, 'xxcaababcvbc', 0)
+        assert list(result) == [(4, 9), (11, 12)]
+
+
     def test_or_repetition(self):
         expr = compile_re('(aa|bb){2}')
         result = find2(expr, 'xabbxaaaaxjkbbajbbaal', 0)

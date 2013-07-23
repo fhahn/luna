@@ -14,6 +14,9 @@ class StateMatch(State):
     def __init__(self):
         pass
 
+    def clone(self, seen):
+        return StateMatch()
+
 
 class StateCharRange(State):
     def __init__(self, c1, c2, out):
@@ -104,23 +107,26 @@ SPECIAL_CHARS = {
 }
 
 
-def set_next(state, next_state, propagate=False):
+def set_next(state, next_state, seen, propagate=False):
+    seen.append(state)
+    if next_state in seen:
+        return
     if isinstance(state, StateSplit):
         if state.out is None:
             state.out = next_state
         elif state.out2 is None:
             state.out2 = next_state
         elif propagate:
-            if state.out != next_state:
-                set_next(state.out, next_state, propagate=propagate)
-            if state.out2 != next_state:
-                set_next(state.out2, next_state, propagate=propagate)
+            if state.out not in seen:
+                set_next(state.out, next_state, seen, propagate=propagate)
+            if state.out2 not in seen:
+                set_next(state.out2, next_state, seen, propagate=propagate)
     else:
         if state.out is None:
             state.out = next_state
         elif propagate:
-            if state.out != next_state:
-                set_next(state.out, next_state, propagate=propagate)
+            if state.out not in seen:
+                set_next(state.out, next_state, seen, propagate=propagate)
 
 
 T_CHAR = 0
@@ -129,6 +135,7 @@ T_CHAR_RANGE = 2
 T_STAR = 3
 T_OR = 4
 T_GROUP = 5
+T_PLUS = 6
 
 
 class Token(object):
@@ -179,6 +186,14 @@ def tokenize(pattern):
                 tokens.append(Token(T_STAR, [], sub_tokens=[prev]))
             else:
                 raise RuntimeError('Invalid pattern')
+        elif c == '+':
+            if len(tokens) > 0:
+                prev = tokens.pop()
+                tokens.append(Token(T_STAR, [], sub_tokens=[prev]))
+                tokens.append(prev.clone())
+            else:
+                raise RuntimeError('Invalid pattern')
+
         elif c == '|':
             tokens_right = tokenize(pattern[i+1:])
             return [
@@ -230,20 +245,20 @@ def tokens_to_expression(tokens, top=True):
         elif t.type == T_STAR:
             match_expr = tokens_to_expression(t.sub_tokens, top=False)
             new_expr = StateSplit(match_expr, None)
-            set_next(match_expr, new_expr, propagate=True)
+            set_next(match_expr, new_expr, [], propagate=True)
         elif t.type == T_OR:
             expr_left = tokens_to_expression(t.sub_tokens, top=False)
             expr_right = tokens_to_expression(t.tokens_right, top=False)
             new_expr = StateSplit(expr_left, expr_right)
         elif t.type == T_GROUP:
             new_expr = tokens_to_expression(t.sub_tokens, top=False)
-            set_next(expr, new_expr, propagate=True)
+            set_next(expr, new_expr, [], propagate=True)
         else:
             raise RuntimeError('Invalid pattern')
-        set_next(expr, new_expr, propagate=t.prop)
+        set_next(expr, new_expr, [], propagate=t.prop)
         expr = new_expr
     if top:
-        set_next(expr, StateMatch(), propagate=True)
+        set_next(expr, StateMatch(), [], propagate=True)
     return start.out
 
 
