@@ -137,3 +137,17 @@ class TestStringModule(object):
         """)
         out, _ = capsys.readouterr()
         assert out == "nil\n"
+
+    def test_gsub_simple_pattern(self, capsys):
+        codetest("""
+            print(string.gsub('aaaxdvbaalaaa', 'aaa', 'A'))
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "AxdvbaalA\n"
+
+    def test_gsub_simple_pattern_no_match(self, capsys):
+        codetest("""
+            print(string.gsub('aaaxdvbaalaaa', 'BBB', 'A'))
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "aaaxdvbaalaaa\n"

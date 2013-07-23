@@ -1,5 +1,7 @@
 """
 """
+import pytest
+
 from luna.w_objects import W_Pri, W_Num, W_Str
 from luna.module import ModuleDef
 from luna.modules.patterns import find2, compile_re
@@ -41,3 +43,22 @@ def method_match(args):
         return [W_Pri(0)]
     else:
         return [W_Str(s[start_i-1:stop_i])]
+
+
+@StringModule.function('gsub')
+def method_gsub(args):
+    s = args[0].s_val
+    pattern = args[1].s_val
+    replace = args[2].s_val
+    expr = compile_re(pattern, False)
+    sublist = []
+    last_stop = 0
+    for m_start, m_stop in find2(expr, s, 0):
+        if (m_start, m_stop) == (-1, -1):
+            return [W_Str(s)]
+        else:
+            sublist.append(s[last_stop:m_start-1])
+            sublist.append(replace)
+            last_stop = m_stop
+    res = "".join(sublist)
+    return [W_Str(res)]
