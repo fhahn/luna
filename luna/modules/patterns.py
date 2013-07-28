@@ -103,7 +103,8 @@ def find2(expr, string, start):
 
 
 SPECIAL_CHARS = {
-    'a': ('A', 'z')
+    'a': ('A', 'z'),
+    's': (' ', ' ')
 }
 
 
