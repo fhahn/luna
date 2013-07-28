@@ -60,5 +60,6 @@ def method_gsub(args):
             sublist.append(s[last_stop:m_start-1])
             sublist.append(replace)
             last_stop = m_stop
+    sublist.append(s[last_stop:])
     res = "".join(sublist)
     return [W_Str(res)]
