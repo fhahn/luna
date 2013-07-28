@@ -141,6 +141,16 @@ assert(a==1 and b==nil)
 
 print'+';
 
+f = [[
+return function ( a , b , c , d , e )
+  local x = a >= b or c or ( d and e ) or nil
+  return x
+end , { a = 1 , b = 2 >= 1 , } or { 1 };
+]]
+f = string.gsub(f, "%s+", "\n");   -- force a SETLINE between opcodes
+f,a = loadstring(f)();
+assert(a.a == 1 and a.b)
+
 
 
 print("OK")
