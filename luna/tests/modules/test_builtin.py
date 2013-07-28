@@ -158,6 +158,27 @@ class TestBuiltin(object):
                 """ % f.name)
         assert ret.n_val == 30
 
+    def test_loadstring_simple(self):
+        ret = codetest("""
+                    s = [[return "test"]]
+                    x = loadstring(s)
+                    return x()
+                """)
+        assert ret.s_val == "test"
+
+    def test_loadstring_function_with_params(self):
+        ret = codetest("""
+                    s = [[
+                        function foo(x, y)
+                            return x + y
+                        end
+                    ]]
+                    x = loadstring(s)
+                    x()
+                    return foo(10, 20)
+                """)
+        assert ret.n_val == 30
+
     def test_tonumber_int(self):
         ret = codetest("""
                     x = tonumber("100")

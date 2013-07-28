@@ -40,6 +40,26 @@ def method_loadfile(args):
     return [protos]
 
 
+@Builtin.function('loadstring')
+def method_loadstring(args):
+    s = args[0].s_val
+    i = 0
+    filename = ''
+    name_tpl= '/tmp/luna{}.lua'
+    while True:
+        filename = name_tpl.format(i)
+        if not os.path.exists(filename):
+            break
+        i += 1
+    fd = os.open(filename, os.O_WRONLY|os.O_CREAT, 0777)
+    os.write(fd, s)
+    os.close(fd)
+    os.system('luajit -b %s %s' %(filename, filename+'c'))
+    os.remove(filename)
+    flags, protos = Parser(filename+'c').parse()
+    return [protos]
+
+
 @Builtin.function('tonumber')
 def method_tonumber(args):
     if len(args) > 1:
