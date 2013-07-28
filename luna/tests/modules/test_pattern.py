@@ -170,7 +170,6 @@ class TestPattern2(object):
         result = find2(expr, 'xxcaababcvbc', 0)
         assert list(result) == [(4, 9), (11, 12)]
 
-
     def test_or_repetition(self):
         expr = compile_re('(aa|bb){2}')
         result = find2(expr, 'xabbxaaaaxjkbbajbbaal', 0)
@@ -436,7 +435,6 @@ class TestPattern2(object):
         assert isinstance(expr.out.out, StateChar)
         assert isinstance(expr.out.out.out, StateMatch)
 
-
     def test_build_expr_misplaced_star(self):
         with pytest.raises(RuntimeError):
             compile_re('*')
@@ -456,5 +454,3 @@ class TestPattern2(object):
     def test_build_expr_misplaced_percent_3(self):
         with pytest.raises(RuntimeError):
             compile_re('a%')
-
-
