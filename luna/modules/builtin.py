@@ -45,9 +45,9 @@ def method_loadstring(args):
     s = args[0].s_val
     i = 0
     filename = ''
-    name_tpl= '/tmp/luna{}.lua'
+    name_tpl= '/tmp/luna'
     while True:
-        filename = name_tpl.format(i)
+        filename = "".join([name_tpl, str(i), ".lua"])
         if not os.path.exists(filename):
             break
         i += 1
