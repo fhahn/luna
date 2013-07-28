@@ -41,3 +41,11 @@ class TestStrings(object):
                     return 1 .. ", " .. 99
                 """)
         assert ret.s_val == "1, 99"
+
+    def test_compare_string_with_nil(self):
+        ret = codetest("""
+                    return nil ~= "foo"
+                """)
+        assert ret.is_true()
+
+

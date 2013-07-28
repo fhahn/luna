@@ -93,8 +93,14 @@ class W_Str(W_Object):
         return self.s_val
 
     def eq(self, w_other):
-        assert isinstance(w_other, W_Str)
-        return self.s_val == w_other.getval()
+        if isinstance(w_other, W_Str):
+            return self.s_val == w_other.getval()
+        else:
+            assert isinstance(w_other, W_Pri)
+            if w_other.n_val == 0:
+                return self.s_val is None
+            else:
+                assert 0
 
     def neq(self, w_other):
         return not self.eq(w_other)
