@@ -11,7 +11,7 @@ class TestCompiled(object):
 
     PYLUA_BIN = os.path.join(os.path.dirname(os.path.abspath(__file__)), ('../../lunac'))
 
-    def test_addition(self, capsys):
+    def test_addition(self):
         f = test_file(src="""
             -- short add
             x = 10
@@ -30,7 +30,7 @@ class TestCompiled(object):
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "20\n25\n1334567889.550000\n"
 
-    def test_if_with_num(self, capsys):
+    def test_if_with_num(self):
         f = test_file(src="""
             x = 10
             y = 5
@@ -84,7 +84,7 @@ class TestCompiled(object):
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "OK1\nOK2\nOK3\nOK4\nOK5\nOK6\nOK7\n"
 
-    def test_if_with_str(self, capsys):
+    def test_if_with_str(self):
         f = test_file(src="""
             x = "foo"
             y = "bar"
@@ -138,7 +138,7 @@ class TestCompiled(object):
         out =  subprocess.check_output([TestCompiled.PYLUA_BIN, f.name])
         assert out == "OK1\nOK2\nOK3\nOK4\nOK5\nOK6\nOK7\n"
 
-    def test_if_with_bool(self, capsys):
+    def test_if_with_bool(self):
         f = test_file(src="""
             x = true
             y = false
