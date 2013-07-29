@@ -183,22 +183,10 @@ class Parser(object):
                 constants[num_kn+i] = self.frames[childc]
             elif u == 1:
                 len_array = self.uleb()
-                len_dict = self.uleb()
+                len_hash = self.uleb()
                 w_table = W_Table()
-                if len_array > 0:
-                    if len_dict > 0:
-                        raise RuntimeError("tables with mixed keys not \
-                                supported at the moment")
-                    for j in xrange(0, len_array):
-                        w_table.set(W_Num(j), self.parse_tab_entry())
-                elif len_dict > 0:
-                    if len_array > 0:
-                        raise RuntimeError("tables with mixed keys not\
-                                supported at the moment")
-                    for j in xrange(0, len_dict):
-                        w_key = self.parse_tab_entry()
-                        w_val = self.parse_tab_entry()
-                        w_table.set(w_key, w_val)
+                self.parse_array(w_table, len_array)
+                self.parse_hash(w_table, len_hash)
                 constants[num_kn+i] = w_table
             else:  # string and all other things
                 constants[num_kn+i] = self.const_str(u)
@@ -218,6 +206,17 @@ class Parser(object):
 
         return LuaBytecodeFrame(flags, constants, uv_data, instructions)
 
+    def parse_array(self, w_table, len_array):
+        for j in xrange(0, len_array):
+            w_table.set(W_Num(j), self.parse_tab_entry())
+
+    def parse_hash(self, w_table, len_hash):
+        for j in xrange(0, len_hash):
+            w_key = self.parse_tab_entry()
+            w_val = self.parse_tab_entry()
+            w_table.set(w_key, w_val)
+
+ 
     def const_str(self, l):
         l -= 5  # Offset for STR enum
         assert l >= 0

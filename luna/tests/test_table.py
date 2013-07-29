@@ -199,3 +199,14 @@ class TestTable(object):
                 return table.remove(t, 99)
         """)
         assert ret.getval() == 0
+
+    def test_mixed_table(self, capsys):
+        ret = codetest("""
+                t = {"a", foo="bar", "b", "c"}
+                print(t[1])
+                print(t[2])
+                print(t["foo"])
+                print(t[3])
+        """)
+        out, _ = capsys.readouterr()
+        assert out == "a\nb\nbar\nc\n"
