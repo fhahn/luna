@@ -1,3 +1,5 @@
+import pytest
+
 from .helpers import codetest
 
 
@@ -103,3 +105,9 @@ class TestRepeat(object):
                 return x
                 """)
         assert ret.getval() == 0.7456241416655579
+
+    def test_call_unknown_builtin(self):
+        with pytest.raises(RuntimeError):
+            codetest("""
+                x = math.find(1)
+            """)

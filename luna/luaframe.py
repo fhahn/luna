@@ -535,7 +535,7 @@ class LuaBytecodeFrame(LuaFrame):
                     params.append(w_param.clone())
             w_res = w_func.function(params)
         else:
-            assert 0
+            raise RuntimeError('Invalid function')
         return w_res
 
     def store_return_values(self, values, slots_start, slots_end):
