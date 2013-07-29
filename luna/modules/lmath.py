@@ -20,3 +20,7 @@ def method_floor(args):
 @MathModule.function('sin')
 def method_sin(args):
     return [W_Num(sin(args[0].n_val))]
+
+@MathModule.function('mod')
+def method_mod(args):
+    return [W_Num(args[0].n_val % args[1].n_val)]

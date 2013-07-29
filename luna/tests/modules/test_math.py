@@ -41,3 +41,9 @@ class TestMath(object):
                 return math.sin(0)
                 """)
         assert ret.n_val == 0
+
+    def test_floor(self):
+        ret = codetest("""
+                return math.mod(100, 10)
+                """)
+        assert ret.n_val == 100 % 10
