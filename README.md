@@ -29,3 +29,43 @@ To run Luna directly on top of Python you can do::
     
 
 [PyPy]: https://bitbucket.org/pypy/pypy
+
+
+TODO
+-----------
+
+* Compiler in Rpython
+* Interators
+* JIT
+* more standard library functions 
+
+
+Features
+---------
+
+At the moment, Luna supports most of the Lua standard constructs, except iterators.
+
+Following parts of the standard library (the code can be found in [luna/modules][]) have been implemented:
+
+[luna/modules]: https://github.com/fhahn/luna/tree/master/luna/modules
+
+
+* Builtins
+ * assert
+ * print
+ * loadfile
+ * loadstring
+ * tonumber
+ * type
+* math
+ * floor
+ * sin
+ * mod
+* table
+ * concat
+ * insert
+ * remove
+* string
+ * find
+ * match
+ * gsub
