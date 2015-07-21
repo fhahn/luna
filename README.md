@@ -10,8 +10,10 @@ and interprets it.
 
 
 You'll need to have a few dependencies installed. You can get them with ``pip
-install -r requirements.txt``. Finally make sure you have a recent checkout of
-[PyPy][] and have it on your ``PYTHONPATH``.
+install -r requirements.txt``. Then make sure you have a recent checkout of
+[PyPy][] and have it on your ``PYTHONPATH``. Finally you need a 
+recent version of ``luajit`` (``luajit -b`` is used to generate
+the bytecode).
 
 To run the tests::
 
